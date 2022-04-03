@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Document Scanner Demo</string>
+    <string name="scanned_image">Scanned Image</string>
+</resources>
