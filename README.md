@@ -68,15 +68,15 @@ class MainActivity : AppCompatActivity() {
 
 Here's what this example looks like with several items
 
-https://user-images.githubusercontent.com/26162804/160264222-bef1ba3d-d6c1-43c8-ba2e-77ff5baef836.mp4
+<video src="https://user-images.githubusercontent.com/26162804/160264222-bef1ba3d-d6c1-43c8-ba2e-77ff5baef836.mp4" data-canonical-src="https://user-images.githubusercontent.com/26162804/160264222-bef1ba3d-d6c1-43c8-ba2e-77ff5baef836.mp4" controls="controls" muted="muted" class="d-block rounded-bottom-2 border-top width-fit" style="max-height:640px;"></video>
 
-https://user-images.githubusercontent.com/26162804/160695710-d30ec1ad-0179-4200-be9f-94dcd5d3b920.mp4
+<video src="https://user-images.githubusercontent.com/26162804/160695710-d30ec1ad-0179-4200-be9f-94dcd5d3b920.mp4" data-canonical-src="https://user-images.githubusercontent.com/26162804/160695710-d30ec1ad-0179-4200-be9f-94dcd5d3b920.mp4" controls="controls" muted="muted" class="d-block rounded-bottom-2 border-top width-fit" style="max-height:640px;"></video>
 
-https://user-images.githubusercontent.com/26162804/160695805-992a0a66-a371-4783-afab-35366541afa4.mp4
+<video src="https://user-images.githubusercontent.com/26162804/160695805-992a0a66-a371-4783-afab-35366541afa4.mp4" data-canonical-src="https://user-images.githubusercontent.com/26162804/160695805-992a0a66-a371-4783-afab-35366541afa4.mp4" controls="controls" muted="muted" class="d-block rounded-bottom-2 border-top width-fit" style="max-height:640px;"></video>
 
-https://user-images.githubusercontent.com/26162804/160695839-4494f71b-db5b-4db5-9de6-00e5ede210fa.mp4
+<video src="https://user-images.githubusercontent.com/26162804/160695839-4494f71b-db5b-4db5-9de6-00e5ede210fa.mp4" data-canonical-src="https://user-images.githubusercontent.com/26162804/160695839-4494f71b-db5b-4db5-9de6-00e5ede210fa.mp4" controls="controls" muted="muted" class="d-block rounded-bottom-2 border-top width-fit" style="max-height:640px;"></video>
 
-https://user-images.githubusercontent.com/26162804/160695861-0d807162-9649-481d-990d-8d031d1a3170.mp4
+<video src="https://user-images.githubusercontent.com/26162804/160695861-0d807162-9649-481d-990d-8d031d1a3170.mp4" data-canonical-src="https://user-images.githubusercontent.com/26162804/160695861-0d807162-9649-481d-990d-8d031d1a3170.mp4" controls="controls" muted="muted" class="d-block rounded-bottom-2 border-top width-fit" style="max-height:640px;"></video>
 
 ### Limit Number of Scans
 
@@ -133,7 +133,7 @@ class MainActivity : AppCompatActivity() {
 
 ```
 
-https://user-images.githubusercontent.com/26162804/160695619-b1931101-9196-49de-b30f-f63c4af8ce9d.mp4
+<video src="https://user-images.githubusercontent.com/26162804/160695619-b1931101-9196-49de-b30f-f63c4af8ce9d.mp4" data-canonical-src="https://user-images.githubusercontent.com/26162804/160695619-b1931101-9196-49de-b30f-f63c4af8ce9d.mp4" controls="controls" muted="muted" class="d-block rounded-bottom-2 border-top width-fit" style="max-height:640px;"></video>
 
 ### Remove Cropper
 
@@ -188,7 +188,7 @@ class MainActivity : AppCompatActivity() {
 }
 ```
 
-https://user-images.githubusercontent.com/26162804/160695550-7005f0cc-597d-4b96-8a6c-867d34fb6969.mp4
+<video src="https://user-images.githubusercontent.com/26162804/160695550-7005f0cc-597d-4b96-8a6c-867d34fb6969.mp4" data-canonical-src="https://user-images.githubusercontent.com/26162804/160695550-7005f0cc-597d-4b96-8a6c-867d34fb6969.mp4" controls="controls" muted="muted" class="d-block rounded-bottom-2 border-top width-fit" style="max-height:640px;"></video>
 
 ### Java Example
 
