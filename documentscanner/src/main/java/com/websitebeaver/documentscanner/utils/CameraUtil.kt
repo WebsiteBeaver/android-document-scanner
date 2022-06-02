@@ -20,57 +20,54 @@ import java.io.IOException
  * @constructor creates camera util
  */
 class CameraUtil(
-    private val activity: ComponentActivity,
-    private val onPhotoCaptureSuccess: (photoFilePath: String) -> Unit,
-    private val onCancelPhoto: () -> Unit
+  private val activity: ComponentActivity,
+  private val onPhotoCaptureSuccess: (photoFilePath: String) -> Unit,
+  private val onCancelPhoto: () -> Unit
 ) {
-    /**
-     * @property photoFilePath the photo file path
-     */
-    private lateinit var photoFilePath: String
+  /** @property photoFilePath the photo file path */
+  private lateinit var photoFilePath: String
 
-    /**
-     * @property startForResult used to launch camera
-     */
-    private val startForResult = activity.registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result: ActivityResult ->
-        when (result.resultCode) {
-            Activity.RESULT_OK -> {
-                // send back photo file path on capture success
-                onPhotoCaptureSuccess(photoFilePath)
-            }
-            Activity.RESULT_CANCELED -> {
-                onCancelPhoto()
-            }
+  /** @property startForResult used to launch camera */
+  private val startForResult =
+    activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+      result: ActivityResult ->
+      when (result.resultCode) {
+        Activity.RESULT_OK -> {
+          // send back photo file path on capture success
+          onPhotoCaptureSuccess(photoFilePath)
         }
+        Activity.RESULT_CANCELED -> {
+          onCancelPhoto()
+        }
+      }
     }
 
-    /**
-     * open the camera by launching an image capture intent
-     *
-     * @param pageNumber the current document page number
-     */
-    @Throws(IOException::class)
-    fun openCamera(pageNumber: Int) {
-        // create intent to launch camera
-        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+  /**
+   * open the camera by launching an image capture intent
+   *
+   * @param pageNumber the current document page number
+   */
+  @Throws(IOException::class)
+  fun openCamera(pageNumber: Int) {
+    // create intent to launch camera
+    val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
 
-        // create new file for photo
-        val photoFile: File = FileUtil().createImageFile(activity, pageNumber)
+    // create new file for photo
+    val photoFile: File = FileUtil().createImageFile(activity, pageNumber)
 
-        // store the photo file path, and send it back once the photo is saved
-        photoFilePath = photoFile.absolutePath
+    // store the photo file path, and send it back once the photo is saved
+    photoFilePath = photoFile.absolutePath
 
-        // photo gets saved to this file path
-        val photoURI: Uri = FileProvider.getUriForFile(
-            activity,
-            "com.websitebeaver.documentscanner.FileProvider",
-            photoFile
-        )
-        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+    // photo gets saved to this file path
+    val photoURI: Uri =
+      FileProvider.getUriForFile(
+        activity,
+        "com.websitebeaver.documentscanner.FileProvider",
+        photoFile
+      )
+    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
 
-        // open camera
-        startForResult.launch(takePictureIntent)
-    }
+    // open camera
+    startForResult.launch(takePictureIntent)
+  }
 }

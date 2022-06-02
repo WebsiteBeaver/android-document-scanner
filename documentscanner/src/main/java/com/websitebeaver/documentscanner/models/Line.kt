@@ -10,6 +10,6 @@ import android.graphics.PointF
  * @constructor creates a line connecting 2 points
  */
 class Line(fromPoint: PointF, toPoint: PointF) {
-    val from: PointF = fromPoint
-    val to: PointF = toPoint
+  val from: PointF = fromPoint
+  val to: PointF = toPoint
 }

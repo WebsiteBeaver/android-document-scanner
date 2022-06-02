@@ -9,43 +9,38 @@ import androidx.appcompat.widget.AppCompatImageButton
 import com.websitebeaver.documentscanner.R
 
 /**
- * This class creates a circular done button by modifying an image button. This is used for the
- * add new document button and retake photo button.
+ * This class creates a circular done button by modifying an image button. This is used for the add
+ * new document button and retake photo button.
  *
  * @param context image button context
  * @param attrs image button attributes
  * @constructor creates circle button
  */
-class CircleButton(
-    context: Context,
-    attrs: AttributeSet
-): AppCompatImageButton(context, attrs) {
-    /**
-     * @property ring the button's outer ring
-     */
-    private val ring = Paint(Paint.ANTI_ALIAS_FLAG)
+class CircleButton(context: Context, attrs: AttributeSet) : AppCompatImageButton(context, attrs) {
+  /** @property ring the button's outer ring */
+  private val ring = Paint(Paint.ANTI_ALIAS_FLAG)
 
-    init {
-        // set outer ring style
-        ring.color = Color.WHITE
-        ring.style = Paint.Style.STROKE
-        ring.strokeWidth = resources.getDimension(R.dimen.small_button_ring_thickness)
-    }
+  init {
+    // set outer ring style
+    ring.color = Color.WHITE
+    ring.style = Paint.Style.STROKE
+    ring.strokeWidth = resources.getDimension(R.dimen.small_button_ring_thickness)
+  }
 
-    /**
-     * This gets called repeatedly. We use it to draw the button
-     *
-     * @param canvas the image button canvas
-     */
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
+  /**
+   * This gets called repeatedly. We use it to draw the button
+   *
+   * @param canvas the image button canvas
+   */
+  override fun onDraw(canvas: Canvas) {
+    super.onDraw(canvas)
 
-        // draw outer ring
-        canvas.drawCircle(
-            (width / 2).toFloat(),
-            (height / 2).toFloat(),
-            (width.toFloat() - ring.strokeWidth) / 2,
-            ring
-        )
-    }
+    // draw outer ring
+    canvas.drawCircle(
+      (width / 2).toFloat(),
+      (height / 2).toFloat(),
+      (width.toFloat() - ring.strokeWidth) / 2,
+      ring
+    )
+  }
 }

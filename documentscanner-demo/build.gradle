@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'com.diffplug.spotless'
 }
 
 android {
@@ -28,6 +29,13 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+}
+
+spotless {
+    kotlin {
+        target '**/*.kt'
+        ktfmt().googleStyle()
     }
 }
 

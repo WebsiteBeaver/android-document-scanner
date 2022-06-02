@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'maven-publish'
     id 'signing'
+    id 'com.diffplug.spotless'
 }
 
 android {
@@ -35,6 +36,13 @@ android {
             withSourcesJar()
             withJavadocJar()
         }
+    }
+}
+
+spotless {
+    kotlin {
+        target '**/*.kt'
+        ktfmt().googleStyle()
     }
 }
 

@@ -12,12 +12,9 @@ import java.io.FileOutputStream
  * @return image as a base64 string
  */
 fun Bitmap.toBase64(): String {
-    val byteArrayOutputStream = ByteArrayOutputStream()
-    compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
-    return Base64.encodeToString(
-        byteArrayOutputStream.toByteArray(),
-        Base64.DEFAULT
-    )
+  val byteArrayOutputStream = ByteArrayOutputStream()
+  compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
+  return Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.DEFAULT)
 }
 
 /**
@@ -26,7 +23,7 @@ fun Bitmap.toBase64(): String {
  * @param file the bitmap gets saved to this file
  */
 fun Bitmap.saveToFile(file: File) {
-    val fileOutputStream = FileOutputStream(file)
-    compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream)
-    fileOutputStream.close()
+  val fileOutputStream = FileOutputStream(file)
+  compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream)
+  fileOutputStream.close()
 }
