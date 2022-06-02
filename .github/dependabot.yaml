@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - directory: /
+    schedule:
+      interval: weekly
+    package-ecosystem: gradle
+    open-pull-requests-limit: 10
+    reviewers:
+      - SDA-SE/communications
+    commit-message:
+      prefix: fix
+      prefix-development: chore
+      include: scope
