@@ -65,7 +65,7 @@ class CameraUtil(
         // photo gets saved to this file path
         val photoURI: Uri = FileProvider.getUriForFile(
             activity,
-            "com.websitebeaver.documentscanner.FileProvider",
+            "${activity.packageName}.DocumentScannerFileProvider",
             photoFile
         )
         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
