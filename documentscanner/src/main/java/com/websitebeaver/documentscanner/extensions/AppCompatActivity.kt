@@ -24,3 +24,8 @@ val AppCompatActivity.screenBounds: Rect get() {
  * @property screenWidth the screen width
  */
 val AppCompatActivity.screenWidth: Int get() = screenBounds.width()
+
+/**
+ * @property screenHeight the screen height
+ */
+val AppCompatActivity.screenHeight: Int get() = screenBounds.height()

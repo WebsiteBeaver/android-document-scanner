@@ -12,6 +12,7 @@ import com.websitebeaver.documentscanner.enums.QuadCorner
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Color
+import com.websitebeaver.documentscanner.R
 import com.websitebeaver.documentscanner.extensions.drawQuad
 import com.websitebeaver.documentscanner.models.Quad
 
@@ -83,13 +84,18 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
      * @param photo the original photo with a rectangular document
      * @param screenWidth the device width
      */
-    fun setImagePreviewHeight(photo: Bitmap, screenWidth: Int) {
+    fun setImagePreviewHeight(photo: Bitmap, screenWidth: Int, screenHeight: Int) {
         // image width to height aspect ratio
         val imageRatio = photo.width.toFloat() / photo.height.toFloat()
+        val buttonsViewMinHeight = context.resources.getDimension(R.dimen.image_crop_view_bottom_bar_min_height).toInt()
 
         imagePreviewHeight = if (photo.height > photo.width) {
             // if user takes the photo in portrait
-            (screenWidth.toFloat() / imageRatio).toInt()
+            Integer.min(
+                (screenWidth.toFloat() / imageRatio).toInt(),
+                screenHeight - buttonsViewMinHeight
+            )
+
         } else {
             // if user takes the photo in landscape
             (screenWidth.toFloat() * imageRatio).toInt()
