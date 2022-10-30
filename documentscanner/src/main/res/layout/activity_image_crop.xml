@@ -11,17 +11,18 @@
     <com.websitebeaver.documentscanner.ui.ImageCropView
         android:id="@+id/image_view"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/image_crop_view_initial_height"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/buttons_container"
         android:contentDescription="@string/image_with_cropper" />
 
     <LinearLayout
+        android:id="@+id/buttons_container"
         android:paddingHorizontal="@dimen/buttons_container_horizontal_padding"
         android:paddingBottom="@dimen/buttons_container_bottom_padding"
         android:baselineAligned="false"
-        android:layout_below="@+id/image_view"
         android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/buttons_container_height"
         android:gravity="center"
         android:orientation="horizontal">
 
