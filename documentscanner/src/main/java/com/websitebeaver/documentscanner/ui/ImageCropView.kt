@@ -79,27 +79,9 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
      * Initially the image preview height is 0. This calculates the height by using the photo
      * dimensions. It maintains the photo aspect ratio (we likely need to scale the photo down
      * to fit the preview container).
-     *
-     * @param photo the original photo with a rectangular document
-     * @param screenWidth the device width
      */
-    fun setImagePreviewHeight(photo: Bitmap, screenWidth: Int) {
-        // image width to height aspect ratio
-        val imageRatio = photo.width.toFloat() / photo.height.toFloat()
-
-        imagePreviewHeight = if (photo.height > photo.width) {
-            // if user takes the photo in portrait
-            (screenWidth.toFloat() / imageRatio).toInt()
-        } else {
-            // if user takes the photo in landscape
-            (screenWidth.toFloat() * imageRatio).toInt()
-        }
-
-        // image container initially has a 0 height, once we calculate the height we can set it
-        layoutParams.height = imagePreviewHeight
-
-        // refresh layout after we change height
-        requestLayout()
+    fun setImagePreviewHeight() {
+        imagePreviewHeight = height
     }
 
     /**
