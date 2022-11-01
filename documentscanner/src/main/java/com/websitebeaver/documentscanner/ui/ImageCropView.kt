@@ -87,19 +87,23 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
     fun setImagePreviewHeight(photo: Bitmap, screenWidth: Int, screenHeight: Int) {
         // image width to height aspect ratio
         val imageRatio = photo.width.toFloat() / photo.height.toFloat()
-        val buttonsViewMinHeight = context.resources.getDimension(R.dimen.image_crop_view_bottom_bar_min_height).toInt()
+        val buttonsViewMinHeight = context.resources.getDimension(
+            R.dimen.buttons_container_min_height
+        ).toInt()
 
         imagePreviewHeight = if (photo.height > photo.width) {
             // if user takes the photo in portrait
-            Integer.min(
-                (screenWidth.toFloat() / imageRatio).toInt(),
-                screenHeight - buttonsViewMinHeight
-            )
-
+            (screenWidth.toFloat() / imageRatio).toInt()
         } else {
             // if user takes the photo in landscape
             (screenWidth.toFloat() * imageRatio).toInt()
         }
+
+        // set a cap on imagePreviewHeight, so that the bottom buttons container isn't hidden
+        imagePreviewHeight = Integer.min(
+            imagePreviewHeight,
+            screenHeight - buttonsViewMinHeight
+        )
 
         // image container initially has a 0 height, once we calculate the height we can set it
         layoutParams.height = imagePreviewHeight

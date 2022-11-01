@@ -9,7 +9,11 @@ import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import com.websitebeaver.documentscanner.constants.DefaultSetting
 import com.websitebeaver.documentscanner.constants.DocumentScannerExtra
-import com.websitebeaver.documentscanner.extensions.*
+import com.websitebeaver.documentscanner.extensions.move
+import com.websitebeaver.documentscanner.extensions.onClick
+import com.websitebeaver.documentscanner.extensions.saveToFile
+import com.websitebeaver.documentscanner.extensions.screenWidth
+import com.websitebeaver.documentscanner.extensions.screenHeight
 import com.websitebeaver.documentscanner.models.Document
 import com.websitebeaver.documentscanner.models.Quad
 import com.websitebeaver.documentscanner.ui.ImageCropView
