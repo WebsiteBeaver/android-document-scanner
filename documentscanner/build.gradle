@@ -52,7 +52,7 @@ publishing {
         release(MavenPublication) {
             groupId = "com.websitebeaver"
             artifactId = "documentscanner"
-            version = "1.0.3"
+            version = "1.0.4"
 
             afterEvaluate {
                 from components.release
