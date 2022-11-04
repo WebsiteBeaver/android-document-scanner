@@ -96,7 +96,7 @@ class DocumentScannerActivity : AppCompatActivity() {
                 // user is allowed to move corners to make corrections
                 try {
                     // set preview image height based off of photo dimensions
-                    imageView.setImagePreviewHeight(photo, screenWidth, screenHeight)
+                    imageView.setImagePreviewBounds(photo, screenWidth, screenHeight)
 
                     // display original photo, so user can adjust detected corners
                     imageView.setImageBitmap(photo)

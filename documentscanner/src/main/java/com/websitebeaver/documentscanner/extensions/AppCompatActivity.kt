@@ -15,9 +15,9 @@ val AppCompatActivity.screenBounds: Rect get() {
     }
 
     // fall back to get screen width and height if using a version before Android R
-    val displayMetrics = DisplayMetrics()
-    windowManager.defaultDisplay.getMetrics(displayMetrics)
-    return Rect(0, 0 , displayMetrics.widthPixels, displayMetrics.heightPixels)
+    return Rect(
+        0, 0 , windowManager.defaultDisplay.width, windowManager.defaultDisplay.height
+    )
 }
 
 /**

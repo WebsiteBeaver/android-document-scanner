@@ -55,6 +55,12 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
     private var imagePreviewHeight = height
 
     /**
+     * @property imagePreviewWidth this is needed because width doesn't update immediately
+     * after we set the image
+     */
+    private var imagePreviewWidth = width
+
+    /**
      * @property ratio image container height to image height ratio used to map container
      * to image coordinates and vice versa
      */
@@ -84,7 +90,7 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
      * @param photo the original photo with a rectangular document
      * @param screenWidth the device width
      */
-    fun setImagePreviewHeight(photo: Bitmap, screenWidth: Int, screenHeight: Int) {
+    fun setImagePreviewBounds(photo: Bitmap, screenWidth: Int, screenHeight: Int) {
         // image width to height aspect ratio
         val imageRatio = photo.width.toFloat() / photo.height.toFloat()
         val buttonsViewMinHeight = context.resources.getDimension(
@@ -105,8 +111,11 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
             screenHeight - buttonsViewMinHeight
         )
 
-        // image container initially has a 0 height, once we calculate the height we can set it
+        imagePreviewWidth = screenWidth
+
+        // image container initially has a 0 width and 0 height, calculate both and set them
         layoutParams.height = imagePreviewHeight
+        layoutParams.width = imagePreviewWidth
 
         // refresh layout after we change height
         requestLayout()
@@ -134,26 +143,26 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
     private val imagePreviewBounds: RectF
         get() {
             // image container width to height ratio
-            val imageViewRatio: Float = width.toFloat() / imagePreviewHeight.toFloat()
+            val imageViewRatio: Float = imagePreviewWidth.toFloat() / imagePreviewHeight.toFloat()
 
             // image width to height ratio
             val imageRatio = drawable.intrinsicWidth.toFloat() / drawable.intrinsicHeight.toFloat()
 
             var left = 0f
             var top = 0f
-            var right = width.toFloat()
+            var right = imagePreviewWidth.toFloat()
             var bottom = imagePreviewHeight.toFloat()
 
             if (imageRatio > imageViewRatio) {
                 // if the image is really wide, there's blank space at the top and bottom
-                val offset = (imagePreviewHeight - (width / imageRatio)) / 2
+                val offset = (imagePreviewHeight - (imagePreviewWidth / imageRatio)) / 2
                 top += offset
                 bottom -= offset
             } else {
                 // if the image is really tall, there's blank space at the left and right
                 // it's also possible that the image ratio matches the image container ratio
                 // in which case there's no blank space
-                val offset = (width - (imagePreviewHeight * imageRatio)) / 2
+                val offset = (imagePreviewWidth - (imagePreviewHeight * imageRatio)) / 2
                 left += offset
                 right -= offset
             }
