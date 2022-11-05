@@ -12,6 +12,8 @@
     <application>
         <activity
             android:name=".DocumentScannerActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.FullScreen" />
 
         <provider
