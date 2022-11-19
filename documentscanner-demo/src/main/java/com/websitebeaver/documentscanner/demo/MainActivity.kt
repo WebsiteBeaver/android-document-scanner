@@ -1,11 +1,11 @@
 package com.websitebeaver.documentscanner.demo
 
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.websitebeaver.documentscanner.DocumentScanner
+import com.websitebeaver.documentscanner.utils.ImageUtil
 
 /**
  * A demo showing how to use the document scanner
@@ -26,7 +26,10 @@ class MainActivity : AppCompatActivity() {
         { croppedImageResults ->
             // display the first cropped image
             croppedImageView.setImageBitmap(
-                BitmapFactory.decodeFile(croppedImageResults.first())
+                ImageUtil().readBitmapFromFileUriString(
+                    croppedImageResults.first(),
+                    contentResolver
+                )
             )
         },
         {

@@ -3,6 +3,7 @@ package com.websitebeaver.documentscanner
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageButton
@@ -328,7 +329,7 @@ class DocumentScannerActivity : AppCompatActivity() {
             try {
                 val croppedImageFile = FileUtil().createImageFile(this, pageNumber)
                 croppedImage.saveToFile(croppedImageFile)
-                croppedImageResults.add(croppedImageFile.absolutePath)
+                croppedImageResults.add(Uri.fromFile(croppedImageFile).toString())
             } catch (exception: Exception) {
                 finishIntentWithError(
                     "unable to save cropped image: ${exception.message}"
