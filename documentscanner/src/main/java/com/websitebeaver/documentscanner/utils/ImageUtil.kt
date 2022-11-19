@@ -1,7 +1,9 @@
 package com.websitebeaver.documentscanner.utils
 
+import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import com.websitebeaver.documentscanner.extensions.distance
 import com.websitebeaver.documentscanner.extensions.toBase64
 import com.websitebeaver.documentscanner.extensions.toOpenCVPoint
@@ -104,12 +106,17 @@ class ImageUtil {
     }
 
     /**
-     * get base64 image from file path
+     * get bitmap image from file uri
      *
-     * @param filePath image is saved here
-     * @return base64 image
+     * @param fileUriString image is saved here and starts with file:///
+     * @return bitmap image
      */
-    fun readImageAndConvertToBase64(filePath: String): String {
-        return BitmapFactory.decodeFile(filePath).toBase64()
+    fun readBitmapFromFileUriString(
+        fileUriString: String,
+        contentResolver: ContentResolver
+    ): Bitmap {
+        return BitmapFactory.decodeStream(
+            contentResolver.openInputStream(Uri.parse(fileUriString))
+        )
     }
 }

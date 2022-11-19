@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.websitebeaver.documentscanner.constants.DefaultSetting
 import com.websitebeaver.documentscanner.constants.DocumentScannerExtra
 import com.websitebeaver.documentscanner.constants.ResponseType
+import com.websitebeaver.documentscanner.extensions.toBase64
 import com.websitebeaver.documentscanner.utils.ImageUtil
 import java.io.File
 
@@ -92,9 +93,10 @@ class DocumentScanner(
                         val base64CroppedImages =
                             croppedImageResults.map { croppedImagePath ->
                                 // read cropped image from file path, and convert to base 64
-                                val base64Image = ImageUtil().readImageAndConvertToBase64(
-                                    croppedImagePath
-                                )
+                                val base64Image = ImageUtil().readBitmapFromFileUriString(
+                                    croppedImagePath,
+                                    activity.contentResolver
+                                ).toBase64()
 
                                 // delete cropped image from android device to avoid
                                 // accumulating photos

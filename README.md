@@ -25,7 +25,7 @@ implementation 'com.websitebeaver:documentscanner:1.0.0'
 ```kotlin
 package com.your.project
 
-import android.graphics.BitmapFactory
+import com.websitebeaver.documentscanner.utils.ImageUtil
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageView
@@ -40,7 +40,10 @@ class MainActivity : AppCompatActivity() {
         { croppedImageResults ->
             // display the first cropped image
             croppedImageView.setImageBitmap(
-                BitmapFactory.decodeFile(croppedImageResults.first())
+                ImageUtil().readBitmapFromFileUriString(
+                    croppedImageResults.first(),
+                    contentResolver
+                )
             )
         },
         {
@@ -87,7 +90,7 @@ maxNumDocuments to 2.
 ```kotlin
 package com.your.project
 
-import android.graphics.BitmapFactory
+import com.websitebeaver.documentscanner.utils.ImageUtil
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageView
@@ -103,7 +106,10 @@ class MainActivity : AppCompatActivity() {
         { croppedImageResults ->
             // display the first cropped image
             croppedImageView.setImageBitmap(
-                BitmapFactory.decodeFile(croppedImageResults.first())
+                ImageUtil().readBitmapFromFileUriString(
+                    croppedImageResults.first(),
+                    contentResolver
+                )
             )
         },
         {
@@ -144,7 +150,7 @@ the max number of scans to 1.
 ```kotlin
 package com.your.project
 
-import android.graphics.BitmapFactory
+import com.websitebeaver.documentscanner.utils.ImageUtil
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageView
@@ -160,7 +166,10 @@ class MainActivity : AppCompatActivity() {
         { croppedImageResults ->
             // display the first cropped image
             croppedImageView.setImageBitmap(
-                BitmapFactory.decodeFile(croppedImageResults.first())
+                ImageUtil().readBitmapFromFileUriString(
+                    croppedImageResults.first(),
+                    contentResolver
+                )
             )
         },
         {
@@ -198,7 +207,7 @@ this library with Java.
 ```java
 package com.your.project;
 
-import android.graphics.BitmapFactory;
+import com.websitebeaver.documentscanner.utils.ImageUtil;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
@@ -214,7 +223,10 @@ public class MainActivity extends AppCompatActivity {
         (croppedImageResults) -> {
             // display the first cropped image
             croppedImageView.setImageBitmap(
-                BitmapFactory.decodeFile(croppedImageResults.get(0))
+                ImageUtil().readBitmapFromFileUriString(
+                    croppedImageResults.first(),
+                    getContentResolver()
+                )
             );
             return null;
         },
