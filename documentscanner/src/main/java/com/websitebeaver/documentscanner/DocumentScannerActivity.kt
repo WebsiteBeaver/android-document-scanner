@@ -170,6 +170,16 @@ class DocumentScannerActivity : AppCompatActivity() {
                 letUserAdjustCrop = it as Boolean
             }
 
+            // validate enableMagnifier option, and update default if user sets it
+            intent.extras?.get(DocumentScannerExtra.EXTRA_ENABLE_MAGNIFIER)?.let {
+                if (!arrayOf("true", "false").contains(it.toString())) {
+                    throw Exception(
+                        "${DocumentScannerExtra.EXTRA_ENABLE_MAGNIFIER} must true or false"
+                    )
+                }
+                imageView.magnifierEnabled = it as Boolean
+            }
+
             // if we don't want user to move corners, we can let the user only take 1 photo
             if (!letUserAdjustCrop) {
                 maxNumDocuments = 1

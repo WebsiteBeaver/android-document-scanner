@@ -32,7 +32,8 @@ class DocumentScanner(
     private val cancelHandler: (() -> Unit)? = null,
     private var responseType: String? = null,
     private var letUserAdjustCrop: Boolean? = null,
-    private var maxNumDocuments: Int? = null
+    private var maxNumDocuments: Int? = null,
+    private var enableMagnifier: Boolean = true
 ) {
     init {
         responseType = responseType ?: DefaultSetting.RESPONSE_TYPE
@@ -46,6 +47,10 @@ class DocumentScanner(
         documentScanIntent.putExtra(
             DocumentScannerExtra.EXTRA_LET_USER_ADJUST_CROP,
             letUserAdjustCrop
+        )
+        documentScanIntent.putExtra(
+            DocumentScannerExtra.EXTRA_ENABLE_MAGNIFIER,
+            enableMagnifier
         )
         documentScanIntent.putExtra(
             DocumentScannerExtra.EXTRA_MAX_NUM_DOCUMENTS,

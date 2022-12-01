@@ -6,6 +6,7 @@ package com.websitebeaver.documentscanner.constants
 class DocumentScannerExtra {
     companion object {
         const val EXTRA_LET_USER_ADJUST_CROP = "letUserAdjustCrop"
+        const val EXTRA_ENABLE_MAGNIFIER = "enableMagnifier"
         const val EXTRA_MAX_NUM_DOCUMENTS = "maxNumDocuments"
     }
 }
