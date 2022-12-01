@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ImageCropView">
+        <attr name="cornerStrokeColor" format="color" />
+        <attr name="cornerStrokeWidth" format="float" />
+        <attr name="enableMagnifier" format="boolean" />
+        <attr name="magnifierRadius" format="float" />
+        <attr name="magnifierScale" format="float" />
+        <attr name="cornerRadius" format="float" />
+    </declare-styleable>
+
+    <declare-styleable name="ImageCropViewStyle">
+        <attr name="ImageCropView" format="reference" />
+    </declare-styleable>
+</resources>

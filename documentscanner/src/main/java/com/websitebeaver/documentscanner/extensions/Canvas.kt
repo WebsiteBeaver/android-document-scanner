@@ -1,9 +1,8 @@
 package com.websitebeaver.documentscanner.extensions
 
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.PointF
+import android.graphics.*
 import android.graphics.drawable.Drawable
+import com.websitebeaver.documentscanner.enums.QuadCorner
 import com.websitebeaver.documentscanner.models.Line
 import com.websitebeaver.documentscanner.models.Quad
 
@@ -15,16 +14,50 @@ import com.websitebeaver.documentscanner.models.Quad
  * @param pointRadius corner circle radius
  * @param paint quad style (color, thickness for example)
  */
-fun Canvas.drawQuad(quad: Quad, pointRadius: Float, paint: Paint) {
+fun Canvas.drawQuad(
+    quad: Quad,
+    pointRadius: Float,
+    paint: Paint,
+    selectedCorner: QuadCorner?,
+    shader: BitmapShader?,
+    magnifierPaint: Paint,
+    magnifierRadius: Float,
+    magnifierScale: Float
+) {
     // draw 4 connecting lines
     for (edge: Line in quad.edges) {
         drawLine(edge.from.x, edge.from.y, edge.to.x, edge.to.y, paint)
     }
 
     // draw 4 corner points
-    for ((_, cornerPoint: PointF) in quad.corners) {
-        drawCircle(cornerPoint.x, cornerPoint.y, pointRadius, paint)
+    for ((corner, cornerPoint: PointF) in quad.corners) {
+        if (corner == selectedCorner && shader != null) {
+            drawMagnifier(cornerPoint, shader, magnifierRadius, magnifierPaint, magnifierScale)
+        } else {
+            drawCircle(cornerPoint.x, cornerPoint.y, pointRadius, paint)
+        }
     }
+}
+
+fun Canvas.drawMagnifier(
+    cornerPoint: PointF,
+    shader: BitmapShader,
+    pointRadius: Float,
+    magnifierPaint: Paint,
+    magnifierScale: Float
+) {
+    val myMatrix = Matrix()
+
+    myMatrix.postScale(magnifierScale, magnifierScale, cornerPoint.x, cornerPoint.y)
+    magnifierPaint.shader = shader
+    magnifierPaint.shader.setLocalMatrix(myMatrix)
+    magnifierPaint.style = Paint.Style.FILL
+    this.drawCircle(cornerPoint.x, cornerPoint.y, pointRadius, magnifierPaint)
+    this.save()
+
+    magnifierPaint.shader = null
+    magnifierPaint.style = Paint.Style.STROKE
+    this.drawCircle(cornerPoint.x, cornerPoint.y, pointRadius, magnifierPaint)
 }
 
 /**

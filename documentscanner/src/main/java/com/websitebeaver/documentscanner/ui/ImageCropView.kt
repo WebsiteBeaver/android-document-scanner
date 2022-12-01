@@ -1,20 +1,16 @@
 package com.websitebeaver.documentscanner.ui
 
-import android.annotation.SuppressLint
+import android.graphics.*
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.PointF
-import android.util.AttributeSet
 import android.view.MotionEvent
-import androidx.appcompat.widget.AppCompatImageView
-import com.websitebeaver.documentscanner.enums.QuadCorner
-import android.graphics.Paint
-import android.graphics.RectF
-import android.graphics.Color
+import android.util.AttributeSet
+import android.content.res.TypedArray
+import android.annotation.SuppressLint
 import com.websitebeaver.documentscanner.R
-import com.websitebeaver.documentscanner.extensions.drawQuad
+import androidx.appcompat.widget.AppCompatImageView
 import com.websitebeaver.documentscanner.models.Quad
+import com.websitebeaver.documentscanner.enums.QuadCorner
+import com.websitebeaver.documentscanner.extensions.drawQuad
 
 /**
  * This class contains the original document photo, and a cropper. The user can drag the corners
@@ -22,9 +18,35 @@ import com.websitebeaver.documentscanner.models.Quad
  *
  * @param context view context
  * @param attrs view attributes
+ * @param defStyle view style
  * @constructor creates image crop view
  */
-class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(context, attrs) {
+class ImageCropView @JvmOverloads constructor(context: Context, private val attrs: AttributeSet? = null, private val defStyle: Int = R.attr.ImageCropView) : AppCompatImageView(context, attrs, defStyle) {
+
+    /**
+     * @property shader for magnifier image.
+     */
+    private var shader: BitmapShader? = null
+
+    /**
+     * @property magnifierEnabled enable or disable magnifier circle.
+     */
+    var magnifierEnabled: Boolean = true
+
+    /**
+     * @property magnifierScale the scale of magnifier circle.
+     */
+    var magnifierScale: Float = 3f
+
+    /**
+     * @property magnifierRadius the size of magnifier circle.
+     */
+    var magnifierRadius: Float = 150f
+
+    /**
+     * @property cornerRadius the size of corner circle.
+     */
+    var cornerRadius: Float = 10f
 
     /**
      * @property quad the 4 document corners
@@ -47,6 +69,11 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
      * @property cropper 4 corners and connecting lines
      */
     private val cropper = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    /**
+     * @property magnifierPaint selected corner for finding edges used for magnifier purpose.
+     */
+    private val magnifierPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     /**
      * @property imagePreviewHeight this is needed because height doesn't update immediately
@@ -76,10 +103,25 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
     )
 
     init {
+        val typedArray = getStyleTypedArray()
+
         // set cropper style
-        cropper.color = Color.WHITE
-        cropper.style = Paint.Style.FILL_AND_STROKE
-        cropper.strokeWidth = 6f
+        applyPaintDefaultStyle(cropper, typedArray)
+        applyPaintDefaultStyle(magnifierPaint, typedArray)
+        cornerRadius = typedArray.getFloat(R.styleable.ImageCropView_cornerRadius, cornerRadius)
+        magnifierScale = typedArray.getFloat(R.styleable.ImageCropView_magnifierScale, magnifierScale)
+        magnifierRadius = typedArray.getFloat(R.styleable.ImageCropView_magnifierRadius, magnifierRadius)
+        magnifierEnabled = typedArray.getBoolean(R.styleable.ImageCropView_enableMagnifier, magnifierEnabled)
+    }
+
+    private fun getStyleTypedArray(): TypedArray {
+        return context.obtainStyledAttributes(attrs, R.styleable.ImageCropView, defStyle, 0)
+    }
+
+    private fun applyPaintDefaultStyle(paint: Paint, typedArray: TypedArray) {
+        paint.style = Paint.Style.FILL_AND_STROKE
+        paint.color = typedArray.getColor(R.styleable.ImageCropView_cornerStrokeColor, Color.WHITE)
+        paint.strokeWidth = typedArray.getFloat(R.styleable.ImageCropView_cornerStrokeWidth, 6f)
     }
 
     /**
@@ -99,7 +141,7 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
 
         imagePreviewHeight = if (photo.height > photo.width) {
             // if user takes the photo in portrait
-            (screenWidth.toFloat() / imageRatio).toInt()
+            (screenHeight.toFloat() / imageRatio).toInt()
         } else {
             // if user takes the photo in landscape
             (screenWidth.toFloat() * imageRatio).toInt()
@@ -117,8 +159,58 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
         layoutParams.height = imagePreviewHeight
         layoutParams.width = imagePreviewWidth
 
+        // For magnifier purpose
+        if (magnifierEnabled) {
+            val resizedBitmap = resizeBitmap(
+                photo,
+                imagePreviewWidth,
+                imagePreviewHeight,
+                screenWidth,
+                screenHeight
+            )
+            shader = createBitmapShader(resizedBitmap!!)
+        }
+
         // refresh layout after we change height
         requestLayout()
+    }
+
+    /**
+     * Create a bitmap shader for magnifier corner.
+     */
+    private fun createBitmapShader(bitmap: Bitmap): BitmapShader {
+        return BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+    }
+
+    /**
+     * Resize bitmap to have an image in exact size of image view for calculate magnifier position.
+     */
+    private fun resizeBitmap(image: Bitmap, destWidth: Int, destHeight: Int, screenWidth: Int, screenHeight: Int): Bitmap? {
+        val background = Bitmap.createBitmap(destWidth, destHeight, Bitmap.Config.ARGB_8888)
+        val originalWidth = image.width.toFloat()
+        val originalHeight = image.height.toFloat()
+        val canvas = Canvas(background)
+        val scaleX = screenWidth / originalWidth
+        val scaleY = screenHeight / originalHeight
+        var xTranslation = 0.0f
+        var yTranslation = 0.0f
+        var scale = 1f
+        if (scaleX < scaleY) { // Scale on X, translate on Y
+            scale = scaleX
+            yTranslation = (destHeight - originalHeight * scale) / 2.0f
+        } else { // Scale on Y, translate on X
+            scale = scaleY
+            xTranslation = (destWidth - originalWidth * scale) / 2.0f
+        }
+        val transformation = Matrix()
+        transformation.postTranslate(xTranslation, yTranslation)
+        transformation.preScale(scale, scale)
+
+        val paint = Paint()
+        paint.isFilterBitmap = true
+        canvas.drawBitmap(image, transformation, paint)
+
+        return background
     }
 
     /**
@@ -197,7 +289,7 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
 
         if (quad !== null) {
             // draw 4 corners and connecting lines
-            canvas.drawQuad(quad!!, 10f, cropper)
+            canvas.drawQuad(quad!!, cornerRadius, cropper, closestCornerToTouch, shader, magnifierPaint, magnifierRadius, magnifierScale)
         }
 
     }
@@ -224,6 +316,7 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
                 // when the user stops touching the screen reset these values
                 prevTouchPoint = null
                 closestCornerToTouch = null
+                this.invalidate()
             }
             MotionEvent.ACTION_MOVE -> {
                 // when the user drags their finger, update the closest corner position
