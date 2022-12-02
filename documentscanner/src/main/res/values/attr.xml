@@ -6,7 +6,7 @@
         <attr name="enableMagnifier" format="boolean" />
         <attr name="magnifierRadius" format="float" />
         <attr name="magnifierScale" format="float" />
-        <attr name="cornerRadius" format="float" />
+        <attr name="edgeCornerRadius" format="float" />
     </declare-styleable>
 
     <declare-styleable name="ImageCropViewStyle">

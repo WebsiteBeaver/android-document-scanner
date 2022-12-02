@@ -44,9 +44,9 @@ class ImageCropView @JvmOverloads constructor(context: Context, private val attr
     var magnifierRadius: Float = 150f
 
     /**
-     * @property cornerRadius the size of corner circle.
+     * @property edgeCornerRadius the size of corner circle.
      */
-    var cornerRadius: Float = 10f
+    var edgeCornerRadius: Float = 10f
 
     /**
      * @property quad the 4 document corners
@@ -108,8 +108,8 @@ class ImageCropView @JvmOverloads constructor(context: Context, private val attr
         // set cropper style
         applyPaintDefaultStyle(cropper, typedArray)
         applyPaintDefaultStyle(magnifierPaint, typedArray)
-        cornerRadius = typedArray.getFloat(R.styleable.ImageCropView_cornerRadius, cornerRadius)
         magnifierScale = typedArray.getFloat(R.styleable.ImageCropView_magnifierScale, magnifierScale)
+        edgeCornerRadius = typedArray.getFloat(R.styleable.ImageCropView_edgeCornerRadius, edgeCornerRadius)
         magnifierRadius = typedArray.getFloat(R.styleable.ImageCropView_magnifierRadius, magnifierRadius)
         magnifierEnabled = typedArray.getBoolean(R.styleable.ImageCropView_enableMagnifier, magnifierEnabled)
     }
@@ -289,7 +289,7 @@ class ImageCropView @JvmOverloads constructor(context: Context, private val attr
 
         if (quad !== null) {
             // draw 4 corners and connecting lines
-            canvas.drawQuad(quad!!, cornerRadius, cropper, closestCornerToTouch, shader, magnifierPaint, magnifierRadius, magnifierScale)
+            canvas.drawQuad(quad!!, edgeCornerRadius, cropper, closestCornerToTouch, shader, magnifierPaint, magnifierRadius, magnifierScale)
         }
 
     }
