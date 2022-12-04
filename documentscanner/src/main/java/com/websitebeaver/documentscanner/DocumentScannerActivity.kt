@@ -13,8 +13,8 @@ import com.websitebeaver.documentscanner.constants.DocumentScannerExtra
 import com.websitebeaver.documentscanner.extensions.move
 import com.websitebeaver.documentscanner.extensions.onClick
 import com.websitebeaver.documentscanner.extensions.saveToFile
-import com.websitebeaver.documentscanner.extensions.screenWidth
 import com.websitebeaver.documentscanner.extensions.screenHeight
+import com.websitebeaver.documentscanner.extensions.screenWidth
 import com.websitebeaver.documentscanner.models.Document
 import com.websitebeaver.documentscanner.models.Quad
 import com.websitebeaver.documentscanner.ui.ImageCropView
@@ -100,7 +100,7 @@ class DocumentScannerActivity : AppCompatActivity() {
                     imageView.setImagePreviewBounds(photo, screenWidth, screenHeight)
 
                     // display original photo, so user can adjust detected corners
-                    imageView.setImageBitmap(photo)
+                    imageView.setImage(photo)
 
                     // display cropper, and allow user to move corners
                     imageView.setCropper(corners)

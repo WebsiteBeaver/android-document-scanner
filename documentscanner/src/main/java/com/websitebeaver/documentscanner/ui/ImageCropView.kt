@@ -3,15 +3,18 @@ package com.websitebeaver.documentscanner.ui
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapShader
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.PointF
+import android.graphics.RectF
+import android.graphics.Shader
 import android.util.AttributeSet
 import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.graphics.drawable.toBitmap
 import com.websitebeaver.documentscanner.enums.QuadCorner
-import android.graphics.Paint
-import android.graphics.RectF
-import android.graphics.Color
 import com.websitebeaver.documentscanner.R
 import com.websitebeaver.documentscanner.extensions.drawQuad
 import com.websitebeaver.documentscanner.models.Quad
@@ -44,9 +47,15 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
     private var closestCornerToTouch: QuadCorner? = null
 
     /**
-     * @property cropper 4 corners and connecting lines
+     * @property cropperLinesAndCornersStyles paint style for 4 corners and connecting lines
      */
-    private val cropper = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val cropperLinesAndCornersStyles = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    /**
+     * @property cropperSelectedCornerFillStyles when you tap and drag a cropper corner the circle
+     * acts like a magnifying glass
+     */
+    private val cropperSelectedCornerFillStyles = Paint()
 
     /**
      * @property imagePreviewHeight this is needed because height doesn't update immediately
@@ -77,9 +86,9 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
 
     init {
         // set cropper style
-        cropper.color = Color.WHITE
-        cropper.style = Paint.Style.FILL_AND_STROKE
-        cropper.strokeWidth = 6f
+        cropperLinesAndCornersStyles.color = Color.WHITE
+        cropperLinesAndCornersStyles.style = Paint.Style.STROKE
+        cropperLinesAndCornersStyles.strokeWidth = 3f
     }
 
     /**
@@ -119,6 +128,14 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
 
         // refresh layout after we change height
         requestLayout()
+    }
+
+    /**
+     * Insert bitmap in image view, and trigger onSetImage event handler
+     */
+    fun setImage(photo: Bitmap) {
+        this.setImageBitmap(photo)
+        this.onSetImage()
     }
 
     /**
@@ -188,6 +205,18 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
     }
 
     /**
+     * This gets called once we insert an image in this image view
+     */
+    private fun onSetImage() {
+        cropperSelectedCornerFillStyles.style = Paint.Style.FILL
+        cropperSelectedCornerFillStyles.shader = BitmapShader(
+            drawable.toBitmap(),
+            Shader.TileMode.CLAMP,
+            Shader.TileMode.CLAMP
+        )
+    }
+
+    /**
      * This gets called constantly, and we use it to update the cropper corners
      *
      * @param canvas the image preview canvas
@@ -197,7 +226,17 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
 
         if (quad !== null) {
             // draw 4 corners and connecting lines
-            canvas.drawQuad(quad!!, 10f, cropper)
+            canvas.drawQuad(
+                quad!!,
+                resources.getDimension(R.dimen.cropper_corner_radius),
+                cropperLinesAndCornersStyles,
+                cropperSelectedCornerFillStyles,
+                closestCornerToTouch,
+                imagePreviewBounds,
+                ratio,
+                resources.getDimension(R.dimen.cropper_selected_corner_radius_magnification),
+                resources.getDimension(R.dimen.cropper_selected_corner_background_magnification)
+            )
         }
 
     }
@@ -242,11 +281,11 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
                 // record the point touched, so we can use it to calculate how far to move corner
                 // next time the user drags (assuming they don't stop touching the screen)
                 prevTouchPoint = touchPoint
-
-                // force refresh view
-                invalidate()
             }
         }
+
+        // force refresh view
+        invalidate()
 
         return true
     }
