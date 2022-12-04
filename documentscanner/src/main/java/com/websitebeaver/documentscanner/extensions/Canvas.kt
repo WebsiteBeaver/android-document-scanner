@@ -1,6 +1,10 @@
 package com.websitebeaver.documentscanner.extensions
 
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.PointF
+import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import com.websitebeaver.documentscanner.enums.QuadCorner
 import com.websitebeaver.documentscanner.models.Line
