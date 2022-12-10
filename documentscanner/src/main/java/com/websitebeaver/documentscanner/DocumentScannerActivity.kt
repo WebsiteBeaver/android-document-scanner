@@ -45,6 +45,11 @@ class DocumentScannerActivity : AppCompatActivity() {
     private var letUserAdjustCrop = DefaultSetting.LET_USER_ADJUST_CROP
 
     /**
+     * @property croppedImageQuality the 0 - 100 quality of the cropped image
+     */
+    private var croppedImageQuality = DefaultSetting.CROPPED_IMAGE_QUALITY
+
+    /**
      * @property cropperOffsetWhenCornersNotFound if we can't find document corners, we set
      * corners to image size with a slight margin
      */
@@ -180,6 +185,17 @@ class DocumentScannerActivity : AppCompatActivity() {
                                 "${DocumentScannerExtra.EXTRA_LET_USER_ADJUST_CROP} is false"
                     )
                 }
+            }
+
+            // validate croppedImageQuality option, and update value if user sets it
+            intent.extras?.get(DocumentScannerExtra.EXTRA_CROPPED_IMAGE_QUALITY)?.let {
+                if (it !is Int || it < 0 || it > 100) {
+                    throw Exception(
+                        "${DocumentScannerExtra.EXTRA_CROPPED_IMAGE_QUALITY} must be a number " +
+                                "between 0 and 100"
+                    )
+                }
+                croppedImageQuality = it
             }
         } catch (exception: Exception) {
             finishIntentWithError(
@@ -328,7 +344,7 @@ class DocumentScannerActivity : AppCompatActivity() {
             // save cropped document photo
             try {
                 val croppedImageFile = FileUtil().createImageFile(this, pageNumber)
-                croppedImage.saveToFile(croppedImageFile)
+                croppedImage.saveToFile(croppedImageFile, croppedImageQuality)
                 croppedImageResults.add(Uri.fromFile(croppedImageFile).toString())
             } catch (exception: Exception) {
                 finishIntentWithError(

@@ -23,6 +23,7 @@ import java.io.File
  * @param responseType the cropped image gets returned in this format
  * @param letUserAdjustCrop whether or not the user can change the auto detected document corners
  * @param maxNumDocuments the maximum number of documents a user can scan at once
+ * @param croppedImageQuality the 0 - 100 quality of the cropped image
  * @constructor creates document scanner
  */
 class DocumentScanner(
@@ -32,7 +33,8 @@ class DocumentScanner(
     private val cancelHandler: (() -> Unit)? = null,
     private var responseType: String? = null,
     private var letUserAdjustCrop: Boolean? = null,
-    private var maxNumDocuments: Int? = null
+    private var maxNumDocuments: Int? = null,
+    private var croppedImageQuality: Int? = DefaultSetting.CROPPED_IMAGE_QUALITY
 ) {
     init {
         responseType = responseType ?: DefaultSetting.RESPONSE_TYPE
@@ -43,6 +45,10 @@ class DocumentScanner(
      */
     fun createDocumentScanIntent(): Intent {
         val documentScanIntent = Intent(activity, DocumentScannerActivity::class.java)
+        documentScanIntent.putExtra(
+            DocumentScannerExtra.EXTRA_CROPPED_IMAGE_QUALITY,
+            croppedImageQuality
+        )
         documentScanIntent.putExtra(
             DocumentScannerExtra.EXTRA_LET_USER_ADJUST_CROP,
             letUserAdjustCrop
@@ -96,7 +102,7 @@ class DocumentScanner(
                                 val base64Image = ImageUtil().readBitmapFromFileUriString(
                                     croppedImagePath,
                                     activity.contentResolver
-                                ).toBase64()
+                                ).toBase64(croppedImageQuality!!)
 
                                 // delete cropped image from android device to avoid
                                 // accumulating photos
