@@ -34,10 +34,11 @@ class DocumentScanner(
     private var responseType: String? = null,
     private var letUserAdjustCrop: Boolean? = null,
     private var maxNumDocuments: Int? = null,
-    private var croppedImageQuality: Int? = DefaultSetting.CROPPED_IMAGE_QUALITY
+    private var croppedImageQuality: Int? = null
 ) {
     init {
         responseType = responseType ?: DefaultSetting.RESPONSE_TYPE
+        croppedImageQuality = croppedImageQuality ?: DefaultSetting.CROPPED_IMAGE_QUALITY
     }
 
     /**
