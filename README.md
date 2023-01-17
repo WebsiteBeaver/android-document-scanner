@@ -10,7 +10,7 @@ apps that let users scan notes, homework, business cards, receipts, or anything 
 Open `build.gradle` and add this to `dependencies`
 
 ```bash
-implementation 'com.websitebeaver:documentscanner:1.3.1'
+implementation 'com.websitebeaver:documentscanner:1.3.2'
 ```
 
 ## Examples
