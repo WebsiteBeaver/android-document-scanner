@@ -56,6 +56,16 @@ class DocumentScannerActivity : AppCompatActivity() {
     private val cropperOffsetWhenCornersNotFound = 100.0
 
     /**
+     * @property isLatestPhotoCaptureSuccessful This lets us know whether or not the latest camera
+     * photo attempt completed successfully. If a user captures a photo, clicks the plus button,
+     * exits the camera, and presses done we don't want the final result to have 2 documents
+     * instead of 1 document. A new document normally gets added each time the user clicks the
+     * plus button or the done button. This variable helps us only adds a document if the camera
+     * capture was successful.
+     */
+    private var isLatestPhotoCaptureSuccessful: Boolean = false
+
+    /**
      * @property originalPhotoPath the photo (before crop) file path
      */
     private lateinit var originalPhotoPath: String
@@ -74,6 +84,7 @@ class DocumentScannerActivity : AppCompatActivity() {
         onPhotoCaptureSuccess = {
             // user takes photo
             originalPhotoPath = it
+            isLatestPhotoCaptureSuccessful = true
 
             // if maxNumDocuments is 3 and this is the 3rd photo, hide the new photo button since
             // we reach the allowed limit
@@ -218,7 +229,7 @@ class DocumentScannerActivity : AppCompatActivity() {
 
         // open camera, so user can snap document photo
         try {
-            cameraUtil.openCamera(documents.size)
+            openCamera()
         } catch (exception: Exception) {
             finishIntentWithError(
                 "error opening camera: ${exception.message}"
@@ -275,12 +286,23 @@ class DocumentScannerActivity : AppCompatActivity() {
     }
 
     /**
+     * Set isLatestPhotoCaptureSuccessful to false, and open the camera. If the user captures
+     * a photo successfully isLatestPhotoCaptureSuccessful gets set to true.
+     */
+    private fun openCamera() {
+        isLatestPhotoCaptureSuccessful = false
+        cameraUtil.openCamera(documents.size)
+    }
+
+    /**
      * Once user accepts by pressing check button, or by pressing add new document button, add
      * original photo path and 4 document corners to documents list. If user isn't allowed to
      * adjust corners, call this automatically.
      */
     private fun addSelectedCornersAndOriginalPhotoPathToDocuments() {
-        documents.add(Document(originalPhotoPath, imageView.corners))
+        if (isLatestPhotoCaptureSuccessful) {
+            documents.add(Document(originalPhotoPath, imageView.corners))
+        }
     }
 
     /**
@@ -290,7 +312,7 @@ class DocumentScannerActivity : AppCompatActivity() {
      */
     private fun onClickNew() {
         addSelectedCornersAndOriginalPhotoPathToDocuments()
-        cameraUtil.openCamera(documents.size)
+        openCamera()
     }
 
     /**
@@ -307,7 +329,7 @@ class DocumentScannerActivity : AppCompatActivity() {
      * case the original document photo isn't good, and they need to take it again.
      */
     private fun onClickRetake() {
-        cameraUtil.openCamera(documents.size)
+        openCamera()
     }
 
     /**
