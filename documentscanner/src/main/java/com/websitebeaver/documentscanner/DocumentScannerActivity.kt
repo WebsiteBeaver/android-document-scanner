@@ -157,6 +157,15 @@ class DocumentScannerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        try {
+            // load OpenCV
+            System.loadLibrary("opencv_java4")
+        } catch (exception: Exception) {
+            finishIntentWithError(
+                "error starting OpenCV: ${exception.message}"
+            )
+        }
+
         // Show cropper, accept crop button, add new document button, and
         // retake photo button. Since we open the camera in a few lines, the user
         // doesn't see this until they finish taking a photo
@@ -243,14 +252,6 @@ class DocumentScannerActivity : AppCompatActivity() {
      */
     override fun onResume() {
         super.onResume()
-        try {
-            // load OpenCV
-            OpenCVLoader.initDebug()
-        } catch (exception: Exception) {
-            finishIntentWithError(
-                "error starting OpenCV: ${exception.message}"
-            )
-        }
     }
 
     /**
