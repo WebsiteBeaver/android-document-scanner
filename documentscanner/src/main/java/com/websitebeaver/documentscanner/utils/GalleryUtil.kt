@@ -66,7 +66,7 @@ class GalleryUtil(
     val openGalleryIntent = getGalleryIntent()
 
     // create new file for photo
-    photoFile = FileUtil().createImageFile(activity, 1)
+    photoFile = FileUtil().createImageFile(activity, pageNumber)
 
     // store the photo file path, and send it back once the photo is saved
     photoFilePath = photoFile.absolutePath
@@ -75,14 +75,12 @@ class GalleryUtil(
     startForResult.launch(openGalleryIntent)
   }
 
-  private fun getGalleryIntent(): Intent {
-    val openGalleryIntent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-    openGalleryIntent.type = "image/*"
-    openGalleryIntent.addCategory(Intent.CATEGORY_OPENABLE)
-    openGalleryIntent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
-    openGalleryIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    openGalleryIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-    return openGalleryIntent
+  private fun getGalleryIntent(): Intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+    type = "image/*"
+    addCategory(Intent.CATEGORY_OPENABLE)
+    addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
   }
 
 }
