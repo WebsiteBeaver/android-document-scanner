@@ -16,6 +16,7 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.graphics.drawable.toBitmap
 import com.websitebeaver.documentscanner.enums.QuadCorner
 import com.websitebeaver.documentscanner.R
+import com.websitebeaver.documentscanner.extensions.changeByteCountByResizing
 import com.websitebeaver.documentscanner.extensions.drawQuad
 import com.websitebeaver.documentscanner.models.Quad
 
@@ -76,13 +77,15 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
     private val ratio: Float get() = imagePreviewBounds.height() / drawable.intrinsicHeight
 
     /**
-     * @property corners document corners in original image coordinates (original image is
-     * probably bigger than the preview image)
+     * @property corners document corners in image preview coordinates
      */
-    val corners: Quad get() = quad!!.mapPreviewToOriginalImageCoordinates(
-        imagePreviewBounds,
-        ratio
-    )
+    val corners: Quad get() = quad!!
+
+    /**
+     * @property imagePreviewMaxSizeInBytes if the photo is too big, we need to scale it down
+     * before we display it
+     */
+    private val imagePreviewMaxSizeInBytes = 100 * 1024 * 1024
 
     init {
         // set cropper style
@@ -134,22 +137,22 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
      * Insert bitmap in image view, and trigger onSetImage event handler
      */
     fun setImage(photo: Bitmap) {
-        this.setImageBitmap(photo)
+        var previewImagePhoto = photo
+        // if the image is too large, we need to scale it down before displaying it
+        if (photo.byteCount > imagePreviewMaxSizeInBytes) {
+            previewImagePhoto = photo.changeByteCountByResizing(imagePreviewMaxSizeInBytes)
+        }
+        this.setImageBitmap(previewImagePhoto)
         this.onSetImage()
     }
 
     /**
-     * Once the user takes a photo, we try to detect corners. Those corners are in the original
-     * photo coordinates. This function converts those coordinates to image preview container
-     * coordinates, and stores them as quad
+     * Once the user takes a photo, we try to detect corners. This function stores them as quad.
      *
      * @param cropperCorners 4 corner points in original photo coordinates
      */
     fun setCropper(cropperCorners: Quad) {
-        // corner points are in original image coordinates, so we need to scale and move the
-        // points to account for blank space (caused by photo and photo container having different
-        // aspect ratios)
-        quad = cropperCorners.mapOriginalToPreviewImageCoordinates(imagePreviewBounds, ratio)
+        quad = cropperCorners
     }
 
     /**
@@ -157,7 +160,7 @@ class ImageCropView(context: Context, attrs: AttributeSet) : AppCompatImageView(
      * the image container ratio then there's blank space either at the top and bottom of the
      * image or the left and right of the image
      */
-    private val imagePreviewBounds: RectF
+    val imagePreviewBounds: RectF
         get() {
             // image container width to height ratio
             val imageViewRatio: Float = imagePreviewWidth.toFloat() / imagePreviewHeight.toFloat()
