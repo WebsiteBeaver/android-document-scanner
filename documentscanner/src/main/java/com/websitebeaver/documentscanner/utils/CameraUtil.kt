@@ -41,6 +41,8 @@ class CameraUtil(
                 onPhotoCaptureSuccess(photoFilePath)
             }
             Activity.RESULT_CANCELED -> {
+                // delete the photo since the user didn't finish taking the photo
+                File(photoFilePath).delete()
                 onCancelPhoto()
             }
         }

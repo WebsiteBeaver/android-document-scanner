@@ -335,6 +335,8 @@ class DocumentScannerActivity : AppCompatActivity() {
      * case the original document photo isn't good, and they need to take it again.
      */
     private fun onClickRetake() {
+        // we're going to retake the photo, so delete the one we just took
+        document?.let { document -> File(document.originalPhotoFilePath).delete() }
         openCamera()
     }
 
