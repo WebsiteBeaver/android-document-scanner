@@ -24,7 +24,6 @@ import com.websitebeaver.documentscanner.utils.FileUtil
 import com.websitebeaver.documentscanner.utils.GalleryUtil
 import com.websitebeaver.documentscanner.utils.ImageUtil
 import java.io.File
-import org.opencv.android.OpenCVLoader
 import org.opencv.core.Point
 
 /**
@@ -63,22 +62,14 @@ class DocumentScannerActivity : AppCompatActivity() {
     private val cropperOffsetWhenCornersNotFound = 100.0
 
     /**
-     * @property isLatestPhotoCaptureSuccessful This lets us know whether or not the latest camera
-     * photo attempt completed successfully. If a user captures a photo, clicks the plus button,
-     * exits the camera, and presses done we don't want the final result to have 2 documents
-     * instead of 1 document. A new document normally gets added each time the user clicks the
-     * plus button or the done button. This variable helps us only adds a document if the camera
-     * capture was successful.
+     * @property document This is the current document. Initially it's null. Once we capture
+     * the photo, and find the corners we update document.
      */
-    private var isLatestPhotoCaptureSuccessful: Boolean = false
+    private var document: Document? = null
 
     /**
-     * @property originalPhotoPath the photo (before crop) file path
-     */
-    private lateinit var originalPhotoPath: String
-
-    /**
-     * @property documents a list of documents (original photo file path and 4 corner points)
+     * @property documents a list of documents (original photo file path, original photo
+     * dimensions and 4 corner points)
      */
     private val documents = mutableListOf<Document>()
 
@@ -90,8 +81,7 @@ class DocumentScannerActivity : AppCompatActivity() {
         this,
         onPhotoCaptureSuccess = {
             // user takes photo
-            originalPhotoPath = it
-            isLatestPhotoCaptureSuccessful = true
+            originalPhotoPath ->
 
             // if maxNumDocuments is 3 and this is the 3rd photo, hide the new photo button since
             // we reach the allowed limit
@@ -116,6 +106,8 @@ class DocumentScannerActivity : AppCompatActivity() {
                 return@CameraUtil
             }
 
+            document = Document(originalPhotoPath, photo.width, photo.height, corners)
+
             if (letUserAdjustCrop) {
                 // user is allowed to move corners to make corrections
                 try {
@@ -125,8 +117,17 @@ class DocumentScannerActivity : AppCompatActivity() {
                     // display original photo, so user can adjust detected corners
                     imageView.setImage(photo)
 
+                    // document corner points are in original image coordinates, so we need to
+                    // scale and move the points to account for blank space (caused by photo and
+                    // photo container having different aspect ratios)
+                    val cornersInImagePreviewCoordinates = corners
+                        .mapOriginalToPreviewImageCoordinates(
+                            imageView.imagePreviewBounds,
+                            imageView.imagePreviewBounds.height() / photo.height
+                        )
+
                     // display cropper, and allow user to move corners
-                    imageView.setCropper(corners)
+                    imageView.setCropper(cornersInImagePreviewCoordinates)
                 } catch (exception: Exception) {
                     finishIntentWithError(
                         "unable get image preview ready: ${exception.message}"
@@ -135,7 +136,9 @@ class DocumentScannerActivity : AppCompatActivity() {
                 }
             } else {
                 // user isn't allowed to move corners, so accept automatically detected corners
-                documents.add(Document(originalPhotoPath, corners))
+                document?.let { document ->
+                    documents.add(document)
+                }
 
                 // create cropped document image, and return file path to complete document scan
                 cropDocumentAndFinishIntent()
@@ -159,8 +162,7 @@ class DocumentScannerActivity : AppCompatActivity() {
         this,
         onGallerySuccess = {
             // user chooses photo
-            originalPhotoPath = it
-            isLatestPhotoCaptureSuccessful = true
+            originalPhotoPath ->
 
             // if maxNumDocuments is 3 and this is the 3rd photo, hide the new photo button since
             // we reach the allowed limit
@@ -185,6 +187,8 @@ class DocumentScannerActivity : AppCompatActivity() {
                 return@GalleryUtil
             }
 
+            document = Document(originalPhotoPath, photo.width, photo.height, corners)
+
             if (letUserAdjustCrop) {
                 // user is allowed to move corners to make corrections
                 try {
@@ -194,8 +198,17 @@ class DocumentScannerActivity : AppCompatActivity() {
                     // display original photo, so user can adjust detected corners
                     imageView.setImage(photo)
 
+                    // document corner points are in original image coordinates, so we need to
+                    // scale and move the points to account for blank space (caused by photo and
+                    // photo container having different aspect ratios)
+                    val cornersInImagePreviewCoordinates = corners
+                        .mapOriginalToPreviewImageCoordinates(
+                            imageView.imagePreviewBounds,
+                            imageView.imagePreviewBounds.height() / photo.height
+                        )
+
                     // display cropper, and allow user to move corners
-                    imageView.setCropper(corners)
+                    imageView.setCropper(cornersInImagePreviewCoordinates)
                 } catch (exception: Exception) {
                     finishIntentWithError(
                         "unable get image preview ready: ${exception.message}"
@@ -204,7 +217,9 @@ class DocumentScannerActivity : AppCompatActivity() {
                 }
             } else {
                 // user isn't allowed to move corners, so accept automatically detected corners
-                documents.add(Document(originalPhotoPath, corners))
+                document?.let { document ->
+                    documents.add(document)
+                }
 
                 // create cropped document image, and return file path to complete document scan
                 cropDocumentAndFinishIntent()
@@ -337,14 +352,6 @@ class DocumentScannerActivity : AppCompatActivity() {
     }
 
     /**
-     * called when we return to activity (user switches to another app and then returns
-     * for example)
-     */
-    override fun onResume() {
-        super.onResume()
-    }
-
-    /**
      * Pass in a photo of a document, and get back 4 corner points (top left, top right, bottom
      * right, bottom left). This tries to detect document corners, but falls back to photo corners
      * with slight margin in case we can't detect document corners.
@@ -377,20 +384,20 @@ class DocumentScannerActivity : AppCompatActivity() {
     }
 
     /**
-     * Set isLatestPhotoCaptureSuccessful to false, and open the camera. If the user captures
-     * a photo successfully isLatestPhotoCaptureSuccessful gets set to true.
+     * Set document to null since we're capturing a new document, and open the camera. If the
+     * user captures a photo successfully document gets updated.
      */
     private fun openCamera() {
-        isLatestPhotoCaptureSuccessful = false
+        document = null
         cameraUtil.openCamera(documents.size)
     }
 
     /**
-     * Set isLatestPhotoCaptureSuccessful to false, and open the gallery. If the user chooses
-     * a photo successfully isLatestPhotoCaptureSuccessful gets set to true.
+     * Set document to null since we're choosing a new document, and open the camera. If the
+     * user chooses a photo successfully document gets updated.
      */
     private fun openGallery() {
-        isLatestPhotoCaptureSuccessful = false
+        document = null
         galleryUtil.openGallery(documents.size)
     }
 
@@ -400,8 +407,18 @@ class DocumentScannerActivity : AppCompatActivity() {
      * adjust corners, call this automatically.
      */
     private fun addSelectedCornersAndOriginalPhotoPathToDocuments() {
-        if (isLatestPhotoCaptureSuccessful) {
-            documents.add(Document(originalPhotoPath, imageView.corners))
+        // only add document it's not null (the current document photo capture, and corner
+        // detection are successful)
+        document?.let { document ->
+            // convert corners from image preview coordinates to original photo coordinates
+            // (original image is probably bigger than the preview image)
+            val cornersInOriginalImageCoordinates = imageView.corners
+                .mapPreviewToOriginalImageCoordinates(
+                    imageView.imagePreviewBounds,
+                    imageView.imagePreviewBounds.height() / document.originalPhotoHeight
+                )
+            document.corners = cornersInOriginalImageCoordinates
+            documents.add(document)
         }
     }
 
@@ -433,6 +450,8 @@ class DocumentScannerActivity : AppCompatActivity() {
      * case the original document photo isn't good, and they need to take it again.
      */
     private fun onClickRetake() {
+        // we're going to retake the photo, so delete the one we just took
+        document?.let { document -> File(document.originalPhotoFilePath).delete() }
         if (imageProvider == ImageProvider.CAMERA) {
             openCamera()
         } else if (imageProvider == ImageProvider.GALLERY) {

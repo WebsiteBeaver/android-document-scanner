@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import com.websitebeaver.documentscanner.extensions.distance
-import com.websitebeaver.documentscanner.extensions.toBase64
 import com.websitebeaver.documentscanner.extensions.toOpenCVPoint
 import com.websitebeaver.documentscanner.models.Quad
 import kotlin.math.min
