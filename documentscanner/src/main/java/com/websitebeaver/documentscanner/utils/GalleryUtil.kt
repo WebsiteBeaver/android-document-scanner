@@ -50,6 +50,8 @@ class GalleryUtil(
           onGallerySuccess(photoFilePath)
         }
         Activity.RESULT_CANCELED -> {
+          // delete the photo since the user didn't finish choosing the photo
+          File(photoFilePath).delete()
           onCancelGallery()
         }
       }
