@@ -32,21 +32,18 @@ class CameraUtil(
     /**
      * @property startForResult used to launch camera
      */
-    private val startForResult = activity.registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result: ActivityResult ->
-        when (result.resultCode) {
-            Activity.RESULT_OK -> {
-                // send back photo file path on capture success
-                onPhotoCaptureSuccess(photoFilePath)
-            }
-            Activity.RESULT_CANCELED -> {
-                // delete the photo since the user didn't finish taking the photo
-                File(photoFilePath).delete()
-                onCancelPhoto()
-            }
-        }
+private val startForResult = activity.registerForActivityResult(
+    ActivityResultContracts.StartActivityForResult()
+) { result: ActivityResult ->
+    if (result.resultCode == Activity.RESULT_OK) {
+        onPhotoCaptureSuccess(photoFilePath)
+    } else {
+        File(photoFilePath).delete()
+        onCancelPhoto()
     }
+}
+
+
 
     /**
      * open the camera by launching an image capture intent
@@ -54,25 +51,15 @@ class CameraUtil(
      * @param pageNumber the current document page number
      */
     @Throws(IOException::class)
-    fun openCamera(pageNumber: Int) {
-        // create intent to launch camera
-        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+fun openCamera(pageNumber: Int) {
+    // create new file for photo
+    val photoFile: File = FileUtil().createImageFile(activity, pageNumber)
 
-        // create new file for photo
-        val photoFile: File = FileUtil().createImageFile(activity, pageNumber)
+    // store the photo file path, and send it back once the photo is saved
+    photoFilePath = photoFile.absolutePath
 
-        // store the photo file path, and send it back once the photo is saved
-        photoFilePath = photoFile.absolutePath
+    // open camera
+    startForResult.launch(photoFile)
+}
 
-        // photo gets saved to this file path
-        val photoURI: Uri = FileProvider.getUriForFile(
-            activity,
-            "${activity.packageName}.DocumentScannerFileProvider",
-            photoFile
-        )
-        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-
-        // open camera
-        startForResult.launch(takePictureIntent)
-    }
 }
