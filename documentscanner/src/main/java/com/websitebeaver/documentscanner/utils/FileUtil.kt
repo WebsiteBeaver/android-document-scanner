@@ -1,39 +1,28 @@
-package com.websitebeaver.documentscanner.utils
-
-import android.os.Environment
+import android.content.ContentResolver
+import android.content.ContentValues
+import android.graphics.Bitmap
+import android.provider.MediaStore
 import androidx.activity.ComponentActivity
-import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.Locale
 import java.util.Date
+import java.util.Locale
 
-/**
- * This class contains a helper function creating temporary files
- *
- * @constructor creates file util
- */
 class FileUtil {
-    /**
-     * create a temporary file
-     *
-     * @param activity the current activity
-     * @param pageNumber the current document page number
-     */
     @Throws(IOException::class)
-    fun createImageFile(activity: ComponentActivity, pageNumber: Int): File {
-        // use current time to make file name more unique
-        val dateTime: String = SimpleDateFormat(
-            "yyyyMMdd_HHmmss",
-            Locale.US
-        ).format(Date())
+    fun createImageFile(activity: ComponentActivity, pageNumber: Int): Bitmap {
+        val dateTime: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
 
-        // create file in pictures directory
-        val storageDir: File? = activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        return File.createTempFile(
-            "DOCUMENT_SCAN_${pageNumber}_${dateTime}",
-            ".jpg",
-            storageDir
-        )
+        val contentResolver: ContentResolver = activity.contentResolver
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, "DOCUMENT_SCAN_${pageNumber}_${dateTime}.jpg")
+            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+        }
+
+        val imageUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+            ?: throw IOException("Failed to create image file")
+
+        return Bitmap.createBitmap(contentResolver.openInputStream(imageUri))
     }
 }
