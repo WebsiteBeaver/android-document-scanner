@@ -1,5 +1,6 @@
-package com.websitebeaver.documentscanner.utils
+package com.aa.documentscanner.utils
 
+import FileUtil
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -51,15 +52,27 @@ private val startForResult = activity.registerForActivityResult(
      * @param pageNumber the current document page number
      */
     @Throws(IOException::class)
-fun openCamera(pageNumber: Int) {
-    // create new file for photo
-    val photoFile: File = FileUtil().createImageFile(activity, pageNumber)
+    fun openCamera(pageNumber: Int) {
+        // create new file for photo
+        val photoFile: File = FileUtil().createImageFile(activity, pageNumber)
 
-    // store the photo file path, and send it back once the photo is saved
-    photoFilePath = photoFile.absolutePath
+        // store the photo file path, and send it back once the photo is saved
+        photoFilePath = photoFile.absolutePath
 
-    // open camera
-    startForResult.launch(photoFile)
-}
+        // Get URI for the File
+        val photoUri = FileProvider.getUriForFile(
+            activity,
+            "${activity.packageName}.provider",  // you need to define this provider in AndroidManifest.xml
+            photoFile
+        )
+
+        // Create an intent to open the camera
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
+            putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+        }
+
+        // open camera
+        startForResult.launch(takePictureIntent)
+    }
 
 }
