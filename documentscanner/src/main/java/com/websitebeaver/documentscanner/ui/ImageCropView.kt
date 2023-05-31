@@ -15,10 +15,10 @@ import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.graphics.drawable.toBitmap
 import com.websitebeaver.documentscanner.enums.QuadCorner
-import com.websitebeaver.documentscanner.R
 import com.websitebeaver.documentscanner.extensions.changeByteCountByResizing
 import com.websitebeaver.documentscanner.extensions.drawQuad
 import com.websitebeaver.documentscanner.models.Quad
+import com.websitebeaver.documentscanner.R
 
 /**
  * This class contains the original document photo, and a cropper. The user can drag the corners

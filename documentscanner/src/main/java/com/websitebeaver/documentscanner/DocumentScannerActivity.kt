@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
@@ -21,6 +22,8 @@ import com.websitebeaver.documentscanner.ui.ImageCropView
 import com.websitebeaver.documentscanner.utils.CameraUtil
 import com.websitebeaver.documentscanner.utils.FileUtil
 import com.websitebeaver.documentscanner.utils.ImageUtil
+
+
 import java.io.File
 import org.opencv.core.Point
 
@@ -72,9 +75,8 @@ class DocumentScannerActivity : AppCompatActivity() {
      */
     private val cameraUtil = CameraUtil(
         this,
-        onPhotoCaptureSuccess = {
+        onPhotoCaptureSuccess = { photoFileUri ->
             // user takes photo
-            originalPhotoPath ->
 
             // if maxNumDocuments is 3 and this is the 3rd photo, hide the new photo button since
             // we reach the allowed limit
@@ -84,9 +86,8 @@ class DocumentScannerActivity : AppCompatActivity() {
                 newPhotoButton.visibility = View.INVISIBLE
             }
 
-            // get bitmap from photo file path
-            val photo: Bitmap = ImageUtil().getImageFromFilePath(originalPhotoPath)
-
+            // get bitmap from photo file Uri
+            val photo: Bitmap = ImageUtil().getImageFromUri(contentResolver, photoFileUri)
             // get document corners by detecting them, or falling back to photo corners with
             // slight margin if we can't find the corners
             val corners = try {
@@ -99,7 +100,12 @@ class DocumentScannerActivity : AppCompatActivity() {
                 return@CameraUtil
             }
 
-            document = Document(originalPhotoPath, photo.width, photo.height, corners)
+            document = Document(
+                photoFileUri.toString(),
+                photo.width,
+                photo.height,
+                corners
+            )
 
             if (letUserAdjustCrop) {
                 // user is allowed to move corners to make corrections
@@ -146,6 +152,7 @@ class DocumentScannerActivity : AppCompatActivity() {
             }
         }
     )
+
 
     /**
      * @property imageView container with original photo and cropper
@@ -336,7 +343,7 @@ class DocumentScannerActivity : AppCompatActivity() {
      */
     private fun onClickRetake() {
         // we're going to retake the photo, so delete the one we just took
-        document?.let { document -> File(document.originalPhotoFilePath).delete() }
+        document?.let { document -> File(document.originalPhotoUri).delete() }
         openCamera()
     }
 
@@ -357,29 +364,48 @@ class DocumentScannerActivity : AppCompatActivity() {
     private fun cropDocumentAndFinishIntent() {
         val croppedImageResults = arrayListOf<String>()
         for ((pageNumber, document) in documents.withIndex()) {
+            // Check if document originalPhotoUri is null or not
+            if (document.originalPhotoUri == null) {
+                Log.e("cropDocumentAndFinishI", "document.originalPhotoUri is null")
+                finishIntentWithError("document.originalPhotoUri is null")
+                return
+            }
+
+            // Check if document corners is null or not
+            if (document.corners == null) {
+                Log.e("cropDocumentAndFinishI", "document.corners is null")
+                finishIntentWithError("document.corners is null")
+                return
+            }
+
+            Log.d("cropDocumentAndFin", "originalPhotoUri: ${document.originalPhotoUri}")
+            Log.d("cropDocumentAndFi", "corners: ${document.corners}")
+
+
             // crop document photo by using corners
             val croppedImage: Bitmap = try {
                 ImageUtil().crop(
-                    document.originalPhotoFilePath,
+                    contentResolver,
+                    document.originalPhotoUri,
                     document.corners
                 )
             } catch (exception: Exception) {
+                Log.e("cropDocumentAndFinishI", "unable to crop image: ${exception.message}")
                 finishIntentWithError("unable to crop image: ${exception.message}")
                 return
             }
 
             // delete original document photo
-            File(document.originalPhotoFilePath).delete()
+            contentResolver.delete(Uri.parse(document.originalPhotoUri), null, null)
 
             // save cropped document photo
             try {
-                val croppedImageFile = FileUtil().createImageFile(this, pageNumber)
-                croppedImage.saveToFile(croppedImageFile, croppedImageQuality)
-                croppedImageResults.add(Uri.fromFile(croppedImageFile).toString())
+                val imageUri = FileUtil().createImageFile(this, pageNumber)
+                croppedImage.saveToFile(this, imageUri, croppedImageQuality)
+                croppedImageResults.add(imageUri.toString())
             } catch (exception: Exception) {
-                finishIntentWithError(
-                    "unable to save cropped image: ${exception.message}"
-                )
+                Log.e("cropDocumentAndFinishI", "unable to save cropped image: ${exception.message}")
+                finishIntentWithError("unable to save cropped image: ${exception.message}")
             }
         }
 
@@ -390,6 +416,8 @@ class DocumentScannerActivity : AppCompatActivity() {
         )
         finish()
     }
+
+
 
     /**
      * This ends the document scanner activity, and returns an error message that can be

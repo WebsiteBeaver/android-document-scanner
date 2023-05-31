@@ -10,6 +10,7 @@ import com.websitebeaver.documentscanner.constants.DocumentScannerExtra
 import com.websitebeaver.documentscanner.constants.ResponseType
 import com.websitebeaver.documentscanner.extensions.toBase64
 import com.websitebeaver.documentscanner.utils.ImageUtil
+
 import java.io.File
 
 /**

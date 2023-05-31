@@ -1,6 +1,8 @@
 package com.websitebeaver.documentscanner.extensions
 
+import android.content.Context
 import android.graphics.Bitmap
+import android.net.Uri
 import android.util.Base64
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -26,11 +28,12 @@ fun Bitmap.toBase64(quality: Int): String {
  *
  * @param file the bitmap gets saved to this file
  */
-fun Bitmap.saveToFile(file: File, quality: Int) {
-    val fileOutputStream = FileOutputStream(file)
-    compress(Bitmap.CompressFormat.JPEG, quality, fileOutputStream)
-    fileOutputStream.close()
+fun Bitmap.saveToFile(context: Context, uri: Uri, quality: Int) {
+    val outputStream = context.contentResolver.openOutputStream(uri)
+    this.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+    outputStream?.close()
 }
+
 
 /**
  * This resizes the image, so that the byte count is a little less than targetBytes

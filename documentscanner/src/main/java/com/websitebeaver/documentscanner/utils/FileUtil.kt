@@ -1,39 +1,32 @@
 package com.websitebeaver.documentscanner.utils
 
-import android.os.Environment
+import android.content.ContentResolver
+import android.content.ContentValues
+import android.net.Uri
+import android.provider.MediaStore
 import androidx.activity.ComponentActivity
-import java.io.File
-import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.Locale
 import java.util.Date
+import java.util.Locale
+import java.io.IOException
 
-/**
- * This class contains a helper function creating temporary files
- *
- * @constructor creates file util
- */
+
 class FileUtil {
-    /**
-     * create a temporary file
-     *
-     * @param activity the current activity
-     * @param pageNumber the current document page number
-     */
     @Throws(IOException::class)
-    fun createImageFile(activity: ComponentActivity, pageNumber: Int): File {
-        // use current time to make file name more unique
-        val dateTime: String = SimpleDateFormat(
-            "yyyyMMdd_HHmmss",
-            Locale.US
-        ).format(Date())
+    fun createImageFile(activity: ComponentActivity, pageNumber: Int): Uri {
+        val dateTime: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+        val contentResolver: ContentResolver = activity.contentResolver
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, "DOCUMENT_SCAN_${pageNumber}_${dateTime}.jpg")
+            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+            put(MediaStore.MediaColumns.RELATIVE_PATH, "Pictures/MyAPP")
+        }
 
-        // create file in pictures directory
-        val storageDir: File? = activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        return File.createTempFile(
-            "DOCUMENT_SCAN_${pageNumber}_${dateTime}",
-            ".jpg",
-            storageDir
-        )
+        val imageUri: Uri? = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+        if (imageUri != null) {
+            return imageUri
+        } else {
+            throw IOException("Failed to create image file")
+        }
     }
 }

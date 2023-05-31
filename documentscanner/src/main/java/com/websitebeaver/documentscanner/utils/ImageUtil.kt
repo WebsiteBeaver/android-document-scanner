@@ -3,18 +3,22 @@ package com.websitebeaver.documentscanner.utils
 import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
 import android.net.Uri
+import android.provider.MediaStore
 import com.websitebeaver.documentscanner.extensions.distance
 import com.websitebeaver.documentscanner.extensions.toOpenCVPoint
 import com.websitebeaver.documentscanner.models.Quad
 import kotlin.math.min
 import org.opencv.android.Utils
+import org.opencv.core.CvType
 import org.opencv.core.Mat
 import org.opencv.core.MatOfPoint2f
 import org.opencv.core.Point
 import org.opencv.core.Size
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
+import java.io.IOException
 
 /**
  * This class contains helper functions for processing images
@@ -28,18 +32,19 @@ class ImageUtil {
      * @param filePath image is saved here
      * @return image bitmap
      */
-    fun getImageFromFilePath(filePath: String): Bitmap {
-        // read image as matrix using OpenCV
-        val image: Mat = Imgcodecs.imread(filePath)
 
-        // convert image to RGB color space since OpenCV reads it using BGR color space
-        Imgproc.cvtColor(image, image, Imgproc.COLOR_RGB2BGR)
 
-        // convert image matrix to bitmap
-        val bitmap = Bitmap.createBitmap(image.cols(), image.rows(), Bitmap.Config.ARGB_8888)
-        Utils.matToBitmap(image, bitmap)
-        return bitmap
+
+    fun getImageFromUri(contentResolver: ContentResolver, uri: Uri): Bitmap {
+        return try {
+            val inputStream = contentResolver.openInputStream(uri)
+            BitmapFactory.decodeStream(inputStream)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            throw e
+        }
     }
+
 
     /**
      * take a photo with a document, crop everything out but document, and force it to display
@@ -49,12 +54,17 @@ class ImageUtil {
      * @param corners the 4 document corners
      * @return bitmap with cropped and warped document
      */
-    fun crop(photoFilePath: String, corners: Quad): Bitmap {
+    fun crop(contentResolver: ContentResolver, photoFilePath: String, corners: Quad): Bitmap {
         // read image with OpenCV
-        val image = Imgcodecs.imread(photoFilePath)
+
+        val bitmap = getImageFromUri(contentResolver, Uri.parse(photoFilePath))
+        val imgMAT = Mat(bitmap.height, bitmap.width, CvType.CV_8UC1)
+        Utils.bitmapToMat(bitmap, imgMAT)
+
 
         // convert image to RGB color space since OpenCV reads it using BGR color space
-        Imgproc.cvtColor(image, image, Imgproc.COLOR_RGB2BGR)
+        Imgproc.cvtColor(imgMAT, imgMAT, Imgproc.COLOR_RGB2BGR)
+
 
         // convert top left, top right, bottom right, and bottom left document corners from
         // Android points to OpenCV points
@@ -84,7 +94,7 @@ class ImageUtil {
         // corrected image after this fix.
         val output = Mat()
         Imgproc.warpPerspective(
-            image,
+            imgMAT,
             output,
             Imgproc.getPerspectiveTransform(
                 MatOfPoint2f(tLC, tRC, bRC, bLC),
