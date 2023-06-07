@@ -10,6 +10,7 @@ import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import com.websitebeaver.documentscanner.constants.DefaultSetting
 import com.websitebeaver.documentscanner.constants.DocumentScannerExtra
+import com.websitebeaver.documentscanner.constants.ImageProvider
 import com.websitebeaver.documentscanner.extensions.move
 import com.websitebeaver.documentscanner.extensions.onClick
 import com.websitebeaver.documentscanner.extensions.saveToFile
@@ -20,6 +21,7 @@ import com.websitebeaver.documentscanner.models.Quad
 import com.websitebeaver.documentscanner.ui.ImageCropView
 import com.websitebeaver.documentscanner.utils.CameraUtil
 import com.websitebeaver.documentscanner.utils.FileUtil
+import com.websitebeaver.documentscanner.utils.GalleryUtil
 import com.websitebeaver.documentscanner.utils.ImageUtil
 import java.io.File
 import org.opencv.core.Point
@@ -47,6 +49,11 @@ class DocumentScannerActivity : AppCompatActivity() {
      * @property croppedImageQuality the 0 - 100 quality of the cropped image
      */
     private var croppedImageQuality = DefaultSetting.CROPPED_IMAGE_QUALITY
+
+    /**
+     * @property imageProvider whether to use the camera or gallery to choose documents
+     */
+    private var imageProvider = DefaultSetting.IMAGE_PROVIDER
 
     /**
      * @property cropperOffsetWhenCornersNotFound if we can't find document corners, we set
@@ -148,6 +155,87 @@ class DocumentScannerActivity : AppCompatActivity() {
     )
 
     /**
+     * @property galleryUtil gets called with photo file path once user chooses image, or
+     * exits gallery
+     */
+    private val galleryUtil = GalleryUtil(
+        this,
+        onGallerySuccess = {
+            // user chooses photo
+            originalPhotoPath ->
+
+            // if maxNumDocuments is 3 and this is the 3rd photo, hide the new photo button since
+            // we reach the allowed limit
+            if (documents.size == maxNumDocuments - 1) {
+                val newPhotoButton: ImageButton = findViewById(R.id.new_photo_button)
+                newPhotoButton.isClickable = false
+                newPhotoButton.visibility = View.INVISIBLE
+            }
+
+            // get bitmap from photo file path
+            val photo: Bitmap = ImageUtil().getImageFromFilePath(originalPhotoPath)
+
+            // get document corners by detecting them, or falling back to photo corners with
+            // slight margin if we can't find the corners
+            val corners = try {
+                val (topLeft, topRight, bottomLeft, bottomRight) = getDocumentCorners(photo)
+                Quad(topLeft, topRight, bottomRight, bottomLeft)
+            } catch (exception: Exception) {
+                finishIntentWithError(
+                    "unable to get document corners: ${exception.message}"
+                )
+                return@GalleryUtil
+            }
+
+            document = Document(originalPhotoPath, photo.width, photo.height, corners)
+
+            if (letUserAdjustCrop) {
+                // user is allowed to move corners to make corrections
+                try {
+                    // set preview image height based off of photo dimensions
+                    imageView.setImagePreviewBounds(photo, screenWidth, screenHeight)
+
+                    // display original photo, so user can adjust detected corners
+                    imageView.setImage(photo)
+
+                    // document corner points are in original image coordinates, so we need to
+                    // scale and move the points to account for blank space (caused by photo and
+                    // photo container having different aspect ratios)
+                    val cornersInImagePreviewCoordinates = corners
+                        .mapOriginalToPreviewImageCoordinates(
+                            imageView.imagePreviewBounds,
+                            imageView.imagePreviewBounds.height() / photo.height
+                        )
+
+                    // display cropper, and allow user to move corners
+                    imageView.setCropper(cornersInImagePreviewCoordinates)
+                } catch (exception: Exception) {
+                    finishIntentWithError(
+                        "unable get image preview ready: ${exception.message}"
+                    )
+                    return@GalleryUtil
+                }
+            } else {
+                // user isn't allowed to move corners, so accept automatically detected corners
+                document?.let { document ->
+                    documents.add(document)
+                }
+
+                // create cropped document image, and return file path to complete document scan
+                cropDocumentAndFinishIntent()
+            }
+        },
+        onCancelGallery = {
+            // user exits gallery
+            // complete document scan if this is the first document since we can't go to crop view
+            // until user takes at least 1 photo
+            if (documents.isEmpty()) {
+                onClickCancel()
+            }
+        }
+    )
+
+    /**
      * @property imageView container with original photo and cropper
      */
     private lateinit var imageView: ImageCropView
@@ -220,6 +308,14 @@ class DocumentScannerActivity : AppCompatActivity() {
                 }
                 croppedImageQuality = it
             }
+
+            // validate imageProvider option, and update default if user sets it
+            intent.extras?.get(DocumentScannerExtra.EXTRA_IMAGE_PROVIDER)?.let {
+                if (!arrayOf(ImageProvider.CAMERA, ImageProvider.GALLERY).contains(it.toString())) {
+                    throw Exception("${DocumentScannerExtra.EXTRA_LET_USER_ADJUST_CROP} must be either camera or gallery")
+                }
+                imageProvider = it as String
+            }
         } catch (exception: Exception) {
             finishIntentWithError(
                 "invalid extra: ${exception.message}"
@@ -239,13 +335,19 @@ class DocumentScannerActivity : AppCompatActivity() {
         completeDocumentScanButton.onClick { onClickDone() }
         retakePhotoButton.onClick { onClickRetake() }
 
-        // open camera, so user can snap document photo
-        try {
-            openCamera()
-        } catch (exception: Exception) {
-            finishIntentWithError(
-                "error opening camera: ${exception.message}"
-            )
+        // open camera or gallery, so user can snap or choose document photo
+        if (imageProvider == ImageProvider.CAMERA) {
+            try {
+                openCamera()
+            } catch (exception: Exception) {
+                finishIntentWithError("error opening camera: ${exception.message}")
+            }
+        } else if (imageProvider == ImageProvider.GALLERY) {
+            try {
+                openGallery()
+            } catch (exception: Exception) {
+                finishIntentWithError("error opening gallery: ${exception.message}")
+            }
         }
     }
 
@@ -291,6 +393,15 @@ class DocumentScannerActivity : AppCompatActivity() {
     }
 
     /**
+     * Set document to null since we're choosing a new document, and open the camera. If the
+     * user chooses a photo successfully document gets updated.
+     */
+    private fun openGallery() {
+        document = null
+        galleryUtil.openGallery(documents.size)
+    }
+
+    /**
      * Once user accepts by pressing check button, or by pressing add new document button, add
      * original photo path and 4 document corners to documents list. If user isn't allowed to
      * adjust corners, call this automatically.
@@ -318,7 +429,11 @@ class DocumentScannerActivity : AppCompatActivity() {
      */
     private fun onClickNew() {
         addSelectedCornersAndOriginalPhotoPathToDocuments()
-        openCamera()
+        if (imageProvider == ImageProvider.CAMERA) {
+            openCamera()
+        } else if (imageProvider == ImageProvider.GALLERY) {
+            openGallery()
+        }
     }
 
     /**
@@ -337,7 +452,11 @@ class DocumentScannerActivity : AppCompatActivity() {
     private fun onClickRetake() {
         // we're going to retake the photo, so delete the one we just took
         document?.let { document -> File(document.originalPhotoFilePath).delete() }
-        openCamera()
+        if (imageProvider == ImageProvider.CAMERA) {
+            openCamera()
+        } else if (imageProvider == ImageProvider.GALLERY) {
+            openGallery()
+        }
     }
 
     /**
