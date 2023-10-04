@@ -11,6 +11,8 @@ android {
     defaultConfig {
         minSdk 21
         targetSdk 30
+        namespace "com.websitebeaver.documentscanner"
+        archivesBaseName = "android-document-scanner"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -50,58 +52,14 @@ dependencies {
 publishing {
     publications {
         release(MavenPublication) {
-            groupId = "com.websitebeaver"
-            artifactId = "documentscanner"
-            version = "1.3.5"
+            groupId = "com.github.LarsYipYip"
+            artifactId = "android-document-scanner"
+            version = "1.3.6"
 
             afterEvaluate {
                 from components.release
 
-                pom {
-                    name = 'Document Scanner'
-                    description = 'Document Scanner'
-                    url = 'https://github.com/websitebeaver/android-document-scanner'
-                    licenses {
-                        license {
-                            name = 'The MIT License'
-                            url = 'https://opensource.org/licenses/MIT'
-                        }
-                    }
-                    developers {
-                        developer {
-                            id = 'dmarcs'
-                            name = 'David Marcus'
-                            email = 'dmarcus@websitebeaver.com'
-                        }
-                    }
-                    scm {
-                        connection = 'scm:git@github.com:websitebeaver/android-document-scanner.git'
-                        developerConnection = 'scm:git@github.com:websitebeaver/android-document-scanner.git'
-                        url = 'https://github.com/websitebeaver/android-document-scanner'
-                    }
-                }
             }
         }
     }
-
-    repositories {
-        maven {
-            name = "mavencentral"
-            def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-
-            credentials {
-                username findProperty("ossrhUsername")
-                password findProperty("ossrhPassword")
-            }
-        }
-    }
-}
-
-signing {
-    def signingKey = findProperty("ossrhSigningKey")
-    def signingPassword = findProperty("ossrhSigningPassword")
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    sign publishing.publications.release
 }
