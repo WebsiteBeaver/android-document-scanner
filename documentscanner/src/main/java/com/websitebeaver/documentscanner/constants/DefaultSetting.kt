@@ -8,6 +8,7 @@ class DefaultSetting {
         const val CROPPED_IMAGE_QUALITY = 100
         const val LET_USER_ADJUST_CROP = true
         const val MAX_NUM_DOCUMENTS = 24
+        const val MAX_CONTENT_SIZE = 4096
         const val RESPONSE_TYPE = ResponseType.IMAGE_FILE_PATH
     }
 }

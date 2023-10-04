@@ -39,6 +39,11 @@ class DocumentScannerActivity : AppCompatActivity() {
     private var maxNumDocuments = DefaultSetting.MAX_NUM_DOCUMENTS
 
     /**
+     * @property maxContentSize maximum size of the image that has been captured
+     */
+    private var maxContentSize = DefaultSetting.MAX_CONTENT_SIZE
+
+    /**
      * @property letUserAdjustCrop whether or not to let user move automatically detected corners
      */
     private var letUserAdjustCrop = DefaultSetting.LET_USER_ADJUST_CROP
@@ -85,7 +90,7 @@ class DocumentScannerActivity : AppCompatActivity() {
             }
 
             // get bitmap from photo file path
-            val photo: Bitmap = ImageUtil().getImageFromFilePath(originalPhotoPath)
+            val photo: Bitmap = ImageUtil().getImageFromFilePath(originalPhotoPath, maxContentSize)
 
             // get document corners by detecting them, or falling back to photo corners with
             // slight margin if we can't find the corners
@@ -186,6 +191,18 @@ class DocumentScannerActivity : AppCompatActivity() {
                 }
                 userSpecifiedMaxImages = it as Int
                 maxNumDocuments = userSpecifiedMaxImages as Int
+            }
+
+            // validate maxContentSize option, and update default if user sets it
+            var userSpecifiedMaxSize: Int? = null
+            intent.extras?.get(DocumentScannerExtra.EXTRA_MAX_CONTENT_SIZE)?.let {
+                if (it.toString().toIntOrNull() == null) {
+                    throw Exception(
+                        "${DocumentScannerExtra.EXTRA_MAX_CONTENT_SIZE} must be a positive number"
+                    )
+                }
+                userSpecifiedMaxSize = it as Int
+                maxContentSize = userSpecifiedMaxSize as Int
             }
 
             // validate letUserAdjustCrop option, and update default if user sets it
@@ -361,7 +378,8 @@ class DocumentScannerActivity : AppCompatActivity() {
             val croppedImage: Bitmap = try {
                 ImageUtil().crop(
                     document.originalPhotoFilePath,
-                    document.corners
+                    document.corners,
+                    maxContentSize
                 )
             } catch (exception: Exception) {
                 finishIntentWithError("unable to crop image: ${exception.message}")

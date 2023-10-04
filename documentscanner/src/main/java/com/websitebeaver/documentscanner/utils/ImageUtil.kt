@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.graphics.Rect
 import android.media.ExifInterface
 import android.net.Uri
 import com.websitebeaver.documentscanner.extensions.distance
@@ -18,6 +19,7 @@ import org.opencv.core.Point
 import org.opencv.core.Size
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
+import kotlin.math.max
 
 /**
  * This class contains helper functions for processing images
@@ -29,11 +31,13 @@ class ImageUtil {
      * get image matrix from file path
      *
      * @param filePath image is saved here
+     * @param maxContentSize used to limit the image size
      * @return image matrix
      */
-    private fun getImageMatrixFromFilePath(filePath: String): Mat {
+    private fun getImageMatrixFromFilePath(filePath: String, maxContentSize: Int): Mat {
         // read image as matrix using OpenCV
         val image: Mat = Imgcodecs.imread(filePath)
+        val file = File(filePath)
 
         // if OpenCV fails to read the image then it's empty
         if (!image.empty()) {
@@ -42,16 +46,26 @@ class ImageUtil {
             return image
         }
 
-        if (!File(filePath).exists()) {
+        if (!file.exists()) {
             throw Exception("File doesn't exist - $filePath")
         }
 
-        if (!File(filePath).canRead()) {
+        if (!file.canRead()) {
             throw Exception("You don't have permission to read $filePath")
         }
 
         // try reading image without OpenCV
-        var imageBitmap = BitmapFactory.decodeFile(filePath)
+        val options = BitmapFactory.Options()
+        options.inJustDecodeBounds = true
+        file.inputStream()
+            .use { BitmapFactory.decodeStream(it, null, options) }
+        val bitmapRect = Rect(0, 0, options.outWidth, options.outHeight)
+        val maxBitmapSize = max(bitmapRect.width(), bitmapRect.height())
+        options.inJustDecodeBounds = false
+        options.inSampleSize = max(1, maxBitmapSize / maxContentSize)
+        var imageBitmap = file.inputStream()
+            .use { BitmapFactory.decodeStream(it, null, options) } ?: throw Exception("Bitmap doesn't exist")
+
         val rotation = when (ExifInterface(filePath).getAttributeInt(
             ExifInterface.TAG_ORIENTATION,
             ExifInterface.ORIENTATION_NORMAL
@@ -61,6 +75,7 @@ class ImageUtil {
             ExifInterface.ORIENTATION_ROTATE_270 -> 270
             else -> 0
         }
+
         imageBitmap = Bitmap.createBitmap(
             imageBitmap,
             0,
@@ -79,11 +94,12 @@ class ImageUtil {
      * get bitmap image from file path
      *
      * @param filePath image is saved here
+     * @param maxContentSize used to limit the image size
      * @return image bitmap
      */
-    fun getImageFromFilePath(filePath: String): Bitmap {
+    fun getImageFromFilePath(filePath: String, maxContentSize: Int): Bitmap {
         // read image as matrix using OpenCV
-        val image: Mat = this.getImageMatrixFromFilePath(filePath)
+        val image: Mat = this.getImageMatrixFromFilePath(filePath, maxContentSize)
 
         // convert image matrix to bitmap
         val bitmap = Bitmap.createBitmap(image.cols(), image.rows(), Bitmap.Config.ARGB_8888)
@@ -97,11 +113,12 @@ class ImageUtil {
      *
      * @param photoFilePath original image is saved here
      * @param corners the 4 document corners
+     * @param maxContentSize used to limit the image size
      * @return bitmap with cropped and warped document
      */
-    fun crop(photoFilePath: String, corners: Quad): Bitmap {
+    fun crop(photoFilePath: String, corners: Quad, maxContentSize: Int): Bitmap {
         // read image with OpenCV
-        val image = this.getImageMatrixFromFilePath(photoFilePath)
+        val image = this.getImageMatrixFromFilePath(photoFilePath, maxContentSize)
 
         // convert top left, top right, bottom right, and bottom left document corners from
         // Android points to OpenCV points
