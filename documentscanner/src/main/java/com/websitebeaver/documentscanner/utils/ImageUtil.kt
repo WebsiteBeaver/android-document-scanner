@@ -19,7 +19,9 @@ import org.opencv.core.Point
 import org.opencv.core.Size
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
+import kotlin.math.ceil
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 /**
  * This class contains helper functions for processing images
@@ -57,14 +59,13 @@ class ImageUtil {
         // try reading image without OpenCV
         val options = BitmapFactory.Options()
         options.inJustDecodeBounds = true
-        file.inputStream()
-            .use { BitmapFactory.decodeStream(it, null, options) }
+        BitmapFactory.decodeFile(file.absolutePath, options)
         val bitmapRect = Rect(0, 0, options.outWidth, options.outHeight)
         val maxBitmapSize = max(bitmapRect.width(), bitmapRect.height())
+        val multiplier = ceil(maxBitmapSize.toDouble() / maxContentSize.toDouble()).toInt()
         options.inJustDecodeBounds = false
-        options.inSampleSize = max(1, maxBitmapSize / maxContentSize)
-        var imageBitmap = file.inputStream()
-            .use { BitmapFactory.decodeStream(it, null, options) } ?: throw Exception("Bitmap doesn't exist")
+        options.inSampleSize = max(1, multiplier)
+        var imageBitmap = BitmapFactory.decodeFile(file.absolutePath, options)
 
         val rotation = when (ExifInterface(filePath).getAttributeInt(
             ExifInterface.TAG_ORIENTATION,
