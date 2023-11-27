@@ -44,6 +44,12 @@ class DocumentScannerActivity : AppCompatActivity() {
     private var letUserAdjustCrop = DefaultSetting.LET_USER_ADJUST_CROP
 
     /**
+     * @property useQuickCapture whether to use "quickCapture" to bypass default "Retry"/"Ok"
+     * behaviour
+     */
+    private var useQuickCapture = DefaultSetting.USE_QUICK_CAPTURE
+
+    /**
      * @property croppedImageQuality the 0 - 100 quality of the cropped image
      */
     private var croppedImageQuality = DefaultSetting.CROPPED_IMAGE_QUALITY
@@ -210,6 +216,15 @@ class DocumentScannerActivity : AppCompatActivity() {
                 }
             }
 
+            intent.extras?.get(DocumentScannerExtra.EXTRA_USE_QUICK_CAPTURE)?.let {
+                if (!arrayOf("true", "false").contains(it.toString())) {
+                    throw Exception(
+                        "${DocumentScannerExtra.EXTRA_USE_QUICK_CAPTURE} must true or false"
+                    )
+                }
+                useQuickCapture = it as Boolean
+            }
+
             // validate croppedImageQuality option, and update value if user sets it
             intent.extras?.get(DocumentScannerExtra.EXTRA_CROPPED_IMAGE_QUALITY)?.let {
                 if (it !is Int || it < 0 || it > 100) {
@@ -287,7 +302,7 @@ class DocumentScannerActivity : AppCompatActivity() {
      */
     private fun openCamera() {
         document = null
-        cameraUtil.openCamera(documents.size)
+        cameraUtil.openCamera(documents.size, useQuickCapture)
     }
 
     /**

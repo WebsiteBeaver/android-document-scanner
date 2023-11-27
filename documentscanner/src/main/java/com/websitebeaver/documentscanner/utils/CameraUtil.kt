@@ -54,9 +54,12 @@ class CameraUtil(
      * @param pageNumber the current document page number
      */
     @Throws(IOException::class)
-    fun openCamera(pageNumber: Int) {
+    fun openCamera(pageNumber: Int, useQuickCapture: Boolean = false) {
         // create intent to launch camera
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        if (useQuickCapture) {
+            takePictureIntent.putExtra("android.intent.extra.quickCapture", true)
+        }
 
         // create new file for photo
         val photoFile: File = FileUtil().createImageFile(activity, pageNumber)
