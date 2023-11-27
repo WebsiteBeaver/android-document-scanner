@@ -33,6 +33,7 @@ class DocumentScanner(
     private val cancelHandler: (() -> Unit)? = null,
     private var responseType: String? = null,
     private var letUserAdjustCrop: Boolean? = null,
+    private var useQuickCapture: Boolean? = null,
     private var maxNumDocuments: Int? = null,
     private var croppedImageQuality: Int? = null
 ) {
@@ -53,6 +54,10 @@ class DocumentScanner(
         documentScanIntent.putExtra(
             DocumentScannerExtra.EXTRA_LET_USER_ADJUST_CROP,
             letUserAdjustCrop
+        )
+        documentScanIntent.putExtra(
+            DocumentScannerExtra.EXTRA_USE_QUICK_CAPTURE,
+            useQuickCapture
         )
         documentScanIntent.putExtra(
             DocumentScannerExtra.EXTRA_MAX_NUM_DOCUMENTS,

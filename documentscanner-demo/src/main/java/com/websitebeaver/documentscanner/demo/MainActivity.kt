@@ -23,7 +23,8 @@ class MainActivity : AppCompatActivity() {
      */
     private val documentScanner = DocumentScanner(
         this,
-        { croppedImageResults ->
+        useQuickCapture = true,
+        successHandler = { croppedImageResults ->
             // display the first cropped image
             croppedImageView.setImageBitmap(
                 ImageUtil().readBitmapFromFileUriString(
@@ -32,11 +33,11 @@ class MainActivity : AppCompatActivity() {
                 )
             )
         },
-        {
+        errorHandler = {
             // an error happened
                 errorMessage -> Log.v("documentscannerlogs", errorMessage)
         },
-        {
+        cancelHandler = {
             // user canceled document scan
             Log.v("documentscannerlogs", "User canceled document scan")
         }
