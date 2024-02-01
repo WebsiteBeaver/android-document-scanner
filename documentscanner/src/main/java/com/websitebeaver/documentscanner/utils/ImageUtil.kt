@@ -98,7 +98,7 @@ class ImageUtil {
      * @param maxContentSize used to limit the image size
      * @return image bitmap
      */
-    fun getImageFromFilePath(filePath: String, maxContentSize: Int): Bitmap {
+    fun getImageFromFilePath(filePath: String, maxContentSize: Int): Bitmap? {
         // read image as matrix using OpenCV
         val image: Mat = this.getImageMatrixFromFilePath(filePath, maxContentSize)
 

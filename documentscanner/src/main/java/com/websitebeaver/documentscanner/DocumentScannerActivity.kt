@@ -90,7 +90,14 @@ class DocumentScannerActivity : AppCompatActivity() {
             }
 
             // get bitmap from photo file path
-            val photo: Bitmap = ImageUtil().getImageFromFilePath(originalPhotoPath, maxContentSize)
+            val photo: Bitmap = try {
+                ImageUtil().getImageFromFilePath(originalPhotoPath, maxContentSize) ?: throw Exception("getImageFromFilePath did not return a bitmap.")
+            } catch (exception: Exception) {
+                finishIntentWithError(
+                    "unable to get bitmap from photo file path: ${exception.message}"
+                )
+                return@CameraUtil
+            }
 
             // get document corners by detecting them, or falling back to photo corners with
             // slight margin if we can't find the corners
